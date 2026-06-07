@@ -13,7 +13,7 @@ Cloudflare Pages. No backend yet.
 src/
   layouts/BaseLayout.astro      site chrome: marquee, nav, footer junk
   components/
-    Card.astro                  original CSS card art (NOT Uno's design)
+    Card.astro                  UNO-style CSS card art
     GamePlaceholder.astro       "under construction" -> THE SWAP POINT for the game
   pages/
     index.astro                 landing page

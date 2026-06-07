@@ -172,7 +172,8 @@ hr.candy {
 }
 
 /* ========================================================================
-   CARD FACES  -  original CSS art (NOT Uno's trademarked design)
+   CARD FACES  -  CSS art styled after classic UNO cards: white-bordered
+   colour faces, a big tilted white oval, and the value echoed in the corners.
    ======================================================================== */
 .card-row {
   display: flex;
@@ -183,23 +184,24 @@ hr.candy {
 }
 .uno-card {
   width: 58px;
-  height: 86px;
-  border-radius: 9px;
-  border: 3px solid #ffffff;
-  box-shadow: 2px 2px 0 #000000;
+  height: 88px;
+  border-radius: 10px;
+  border: 4px solid #ffffff;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.45);
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: Arial, sans-serif;
-  font-weight: bold;
+  font-family: Arial, "Helvetica Neue", sans-serif;
+  font-weight: 900;
   flex: 0 0 auto;
+  overflow: hidden;
 }
 .uno-card .pip {
-  /* the white oval behind the numeral */
+  /* the big tilted white oval that defines the UNO look */
   background: #ffffff;
-  width: 34px;
-  height: 56px;
+  width: 36px;
+  height: 66px;
   border-radius: 50%;
   transform: rotate(-20deg);
   display: flex;
@@ -208,18 +210,24 @@ hr.candy {
 }
 .uno-card .val {
   transform: rotate(20deg);
-  font-size: 26px;
+  font-size: 30px;
   font-style: italic;
+  line-height: 1;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.18);
 }
+.uno-card .val.small { font-size: 20px; } /* two-character values: 10, +2, +4 */
 .uno-card .corner {
+  /* value echoed in two opposite corners, like a real UNO card */
   position: absolute;
-  font-size: 12px;
+  font-size: 13px;
   color: #ffffff;
   font-style: italic;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.55);
 }
 .uno-card .corner.tl { top: 3px; left: 5px; }
 .uno-card .corner.br { bottom: 3px; right: 5px; transform: rotate(180deg); }
 
+/* the four UNO colours: card face + matching numeral inside the white oval */
 .c-red    { background: var(--card-red); }
 .c-red    .val { color: var(--card-red); }
 .c-green  { background: var(--card-green); }
@@ -227,14 +235,28 @@ hr.candy {
 .c-blue   { background: var(--card-blue); }
 .c-blue   .val { color: var(--card-blue); }
 .c-yellow { background: var(--card-yellow); }
-.c-yellow .val { color: #b8860b; }
+.c-yellow .val { color: #c98a00; } /* darker gold so it reads on the white oval */
 
-/* Wild + copy power-up faces */
-.c-wild { background: conic-gradient(var(--card-red) 0 90deg, var(--card-blue) 90deg 180deg, var(--card-yellow) 180deg 270deg, var(--card-green) 270deg 360deg); }
-.c-wild .pip { background: rgba(255,255,255,0.85); }
-.c-wild .val { color: #000000; font-size: 18px; }
-.c-copy { background: #111111; }
-.c-copy .val { color: #ffffff; font-size: 16px; }
+/* Wild: black card with the four-colour oval, like UNO's wild card */
+.c-wild { background: #0a0a0a; }
+.c-wild .pip {
+  background: conic-gradient(
+    var(--card-red)    0deg 90deg,
+    var(--card-blue)   90deg 180deg,
+    var(--card-green)  180deg 270deg,
+    var(--card-yellow) 270deg 360deg);
+}
+.c-wild .val {
+  color: #ffffff;
+  font-size: 20px;
+  text-shadow: 0 0 3px #000000, 1px 1px 0 #000000;
+}
+
+/* Copy power-ups: UNO action-card treatment - black face, white oval */
+.c-copy { background: #0a0a0a; }
+.c-copy .pip { background: #ffffff; }
+.c-copy .val { color: #111111; }
+.c-copy .corner { color: #ffffff; }
 
 .card-caption {
   font-family: "Courier New", monospace;
