@@ -19,14 +19,17 @@ function skipSvg(): string {
 }
 
 function reverseSvg(): string {
+  // Two arrows with 180-degree rotational symmetry: the left one points up, the
+  // right one points down, and their tails curve toward each other into a loop -
+  // the classic UNO "reverse" look.
   return (
     `<svg class="glyph" viewBox="0 0 40 40" aria-hidden="true">` +
-    `<g fill="none" stroke="#eaeaec" stroke-width="4.5" stroke-linecap="round">` +
-    `<path d="M16 26 C 10 21, 10 17, 16 12"/>` +
-    `<path d="M24 14 C 30 19, 30 23, 24 28"/>` +
+    `<g fill="none" stroke="#eaeaec" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">` +
+    `<path d="M15 10 L15 21 C 15 26 19 28 24 27"/>` +
+    `<path d="M25 30 L25 19 C 25 14 21 12 16 13"/>` +
     `</g>` +
-    `<polygon points="16,7 10,16 22,16" fill="#eaeaec"/>` +
-    `<polygon points="24,33 18,24 30,24" fill="#eaeaec"/>` +
+    `<polygon points="15,6 10,15 20,15" fill="#eaeaec"/>` +
+    `<polygon points="25,34 20,25 30,25" fill="#eaeaec"/>` +
     `</svg>`
   );
 }
