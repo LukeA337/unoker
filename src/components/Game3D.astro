@@ -1,0 +1,382 @@
+---
+// Game3D.astro - a FIRST-PERSON, PS1-style renderer over the SAME engine the
+// 2D table uses. It reads GameState and draws a 3D scene; no game logic lives
+// here. Character + hand models are deliberate low-poly placeholders for now.
+//
+// PS1 look = low internal render resolution upscaled with nearest-neighbour
+// (CSS `image-rendering: pixelated`), no anti-aliasing, vertex "snapping"
+// jitter, per-vertex (Gouraud) lighting, and fog. Lit bright + warm and
+// playful rather than the dark Buckshot-Roulette mood.
+---
+<div class="scene3d" id="scene3d">
+  <div class="scene3d-canvas" id="scene3d-canvas"></div>
+  <div class="scene3d-ui">
+    <span class="scene3d-title">UNOKER&nbsp;3D</span>
+    <span class="scene3d-hand" id="scene3d-hand">dealing…</span>
+    <button class="scene3d-btn" id="scene3d-deal" type="button">Deal again</button>
+  </div>
+  <div class="scene3d-loading" id="scene3d-loading">booting the PlayStation…</div>
+</div>
+
+<script>
+  import * as THREE from "three";
+  import {
+    startGame,
+    startHand,
+    faceLabel,
+    faceColorClass,
+    evaluateHand,
+    type Card,
+    type GameState,
+  } from "../engine/index";
+
+  const mount = document.getElementById("scene3d-canvas");
+  const loadingEl = document.getElementById("scene3d-loading");
+  const handEl = document.getElementById("scene3d-hand");
+  const dealBtn = document.getElementById("scene3d-deal");
+  const root = document.getElementById("scene3d");
+
+  // brand hues, matching the 2D cards
+  const HEX: Record<string, string> = {
+    red: "#b01e35",
+    green: "#73aa2c",
+    blue: "#075ca9",
+    yellow: "#ead426",
+    wild: "#1e1e1e",
+    copy: "#1e1e1e",
+  };
+
+  if (mount && root) {
+    try {
+      run(mount, root);
+    } catch (err) {
+      if (loadingEl) {
+        loadingEl.textContent =
+          "Your browser couldn't start WebGL for the 3D table. The 2D game at /play works everywhere.";
+      }
+      console.error("UNOKER 3D failed to start:", err);
+    }
+  }
+
+  function run(mount: HTMLElement, root: HTMLElement) {
+    // ---- renderer (low-res, no AA -> the pixelated PS1 base) -------------
+    const renderer = new THREE.WebGLRenderer({
+      antialias: false,
+      powerPreference: "low-power",
+      preserveDrawingBuffer: true, // lets the frame be read back / screenshotted
+    });
+    renderer.setPixelRatio(1);
+    mount.appendChild(renderer.domElement);
+
+    const PIXEL = 4; // internal render = on-screen / PIXEL, then upscaled
+    function sizeRenderer() {
+      const w = Math.max(1, Math.floor(root.clientWidth / PIXEL));
+      const h = Math.max(1, Math.floor(root.clientHeight / PIXEL));
+      renderer.setSize(w, h, false); // false: keep CSS size (canvas is 100%)
+      camera.aspect = root.clientWidth / root.clientHeight;
+      camera.updateProjectionMatrix();
+    }
+
+    // ---- scene: bright, warm, playful -----------------------------------
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x6b8fb5);
+    scene.fog = new THREE.Fog(0x6b8fb5, 6, 13);
+
+    const camera = new THREE.PerspectiveCamera(68, 4 / 3, 0.1, 60);
+    const LOOK = new THREE.Vector3(0, 0.95, 0);
+    const CAM_BASE = new THREE.Vector3(0, 1.28, 2.0);
+
+    scene.add(new THREE.AmbientLight(0xfff1d9, 1.05));
+    const key = new THREE.PointLight(0xfff0c0, 0.9, 22, 2);
+    key.position.set(0, 3.2, 0.6);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0x9fd0ff, 0.5);
+    fill.position.set(-3, 2, 3);
+    scene.add(fill);
+
+    // ---- PS1 vertex jitter: snap projected vertices to a coarse grid -----
+    const ps1 = (m: THREE.Material) => {
+      (m as any).onBeforeCompile = (shader: any) => {
+        shader.vertexShader = shader.vertexShader.replace(
+          "#include <project_vertex>",
+          `#include <project_vertex>
+           {
+             vec2 grid = vec2(120.0, 90.0);
+             gl_Position.xy = floor((gl_Position.xy / gl_Position.w) * grid) / grid * gl_Position.w;
+           }`,
+        );
+      };
+      return m;
+    };
+    const lambert = (color: number) => ps1(new THREE.MeshLambertMaterial({ color }));
+
+    // ---- the room + table -----------------------------------------------
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), lambert(0x6a4a36));
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
+
+    const tableTop = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.35, 1.35, 0.12, 18),
+      lambert(0x2e8b4f), // felt green
+    );
+    tableTop.position.y = 0.78;
+    scene.add(tableTop);
+    const tableRim = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.45, 1.45, 0.2, 18),
+      lambert(0x5a3a22), // wooden rim
+    );
+    tableRim.position.y = 0.7;
+    scene.add(tableRim);
+    const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 0.7, 10), lambert(0x5a3a22));
+    pedestal.position.y = 0.35;
+    scene.add(pedestal);
+
+    // a little pot of chips in the middle, for life
+    const chipColors = [0xd83b46, 0x2f6fd0, 0x37b24d, 0xf2c037];
+    for (let i = 0; i < 10; i++) {
+      const chip = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.09, 0.09, 0.02, 12),
+        lambert(chipColors[i % chipColors.length]),
+      );
+      chip.position.set((i % 2) * 0.12 - 0.06, 0.85 + Math.floor(i / 2) * 0.022, -0.1);
+      scene.add(chip);
+    }
+
+    // ---- placeholder opponents around the far side ----------------------
+    const seatColors = [0xc94f8a, 0x4fb0c9, 0xc9a24f];
+    [-0.7, 0, 0.7].forEach((ang, i) => {
+      const g = new THREE.Group();
+      const r = 1.85;
+      g.position.set(Math.sin(ang) * r, 0, -Math.cos(ang) * r * 0.7 - 0.3);
+      g.lookAt(0, 1.0, 0);
+      const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.28, 0.5, 3, 8), lambert(seatColors[i]));
+      body.position.y = 1.15;
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), lambert(0xe6b07a));
+      head.position.y = 1.62;
+      g.add(body, head);
+      // two card backs in front of each opponent
+      const backTex = makeBackTexture();
+      for (let c = 0; c < 2; c++) {
+        const back = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.16, 0.24),
+          new THREE.MeshBasicMaterial({ map: backTex }),
+        );
+        back.position.set((c - 0.5) * 0.18, 0.86, 0.55);
+        back.rotation.x = -Math.PI / 2.1;
+        g.add(back);
+      }
+      scene.add(g);
+    });
+
+    // ---- first-person: our own hands + our cards, parented to the camera -
+    const handRig = new THREE.Group();
+    camera.add(handRig);
+    scene.add(camera);
+
+    const skin = lambert(0xe0a878);
+    const makeHand = (side: number) => {
+      const hand = new THREE.Group();
+      const palm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.05, 0.18), skin);
+      hand.add(palm);
+      for (let f = 0; f < 4; f++) {
+        const finger = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 0.11), skin);
+        finger.position.set((f - 1.5) * 0.04, 0, -0.14);
+        hand.add(finger);
+      }
+      const thumb = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.08), skin);
+      thumb.position.set(side * 0.1, 0, -0.04);
+      hand.add(thumb);
+      hand.position.set(side * 0.34, -0.42, -0.62);
+      hand.rotation.set(-0.9, side * -0.25, side * 0.2);
+      return hand;
+    };
+    handRig.add(makeHand(-1), makeHand(1));
+
+    // the fan of our cards (rebuilt every deal)
+    const fan = new THREE.Group();
+    fan.position.set(0, -0.34, -0.58);
+    fan.rotation.x = -0.5;
+    handRig.add(fan);
+
+    function makeCardMesh(card: Card): THREE.Mesh {
+      const klass = faceColorClass(card);
+      const tex = makeCardTexture(faceLabel(card), HEX[klass] ?? "#1e1e1e");
+      const mat = new THREE.MeshBasicMaterial({ map: tex });
+      return new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.24), mat);
+    }
+
+    function showHand(cards: Card[]) {
+      fan.clear();
+      const n = cards.length;
+      cards.forEach((card, i) => {
+        const m = makeCardMesh(card);
+        const t = n > 1 ? i / (n - 1) - 0.5 : 0; // -0.5 .. 0.5
+        m.position.set(t * 0.26, Math.abs(t) * -0.05, -Math.abs(t) * 0.02);
+        m.rotation.z = -t * 0.5;
+        fan.add(m);
+      });
+    }
+
+    // ---- engine: deal a hand, show it -----------------------------------
+    let game: GameState = freshGame();
+    function freshGame(): GameState {
+      return startGame({
+        players: [
+          { name: "You", isBot: false },
+          { name: "Roxx", isBot: true },
+          { name: "Bitz", isBot: true },
+          { name: "Dux", isBot: true },
+        ],
+        startingChips: 200,
+        minBet: 10,
+        seed: (Date.now() & 0x7fffffff) >>> 0,
+      });
+    }
+    function deal() {
+      const hand = game.players[0].hand;
+      showHand(hand);
+      if (handEl) {
+        const cat = hand.length === 5 ? evaluateHand(hand).category.name : "—";
+        handEl.textContent = `Your hand: ${cat}`;
+      }
+    }
+    deal();
+
+    dealBtn?.addEventListener("click", () => {
+      game = startHand(game);
+      deal();
+    });
+
+    // ---- drag to look around (yaw/pitch around the table) ---------------
+    let yaw = 0;
+    let pitch = 0;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    root.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+    window.addEventListener("pointerup", () => (dragging = false));
+    window.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      yaw = Math.max(-0.7, Math.min(0.7, yaw - (e.clientX - lastX) * 0.004));
+      pitch = Math.max(-0.35, Math.min(0.4, pitch + (e.clientY - lastY) * 0.004));
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+
+    // ---- loop -----------------------------------------------------------
+    // Re-size from the loop so it self-heals if the container has no layout
+    // width yet at startup (and handles window resizes for free).
+    let lastW = -1;
+    let lastH = -1;
+    const clock = new THREE.Clock();
+    function frame() {
+      const cw = root.clientWidth;
+      const ch = root.clientHeight;
+      if (cw > 0 && ch > 0 && (cw !== lastW || ch !== lastH)) {
+        lastW = cw;
+        lastH = ch;
+        sizeRenderer();
+      }
+      const t = clock.getElapsedTime();
+      const bob = Math.sin(t * 1.3) * 0.012;
+      camera.position.set(
+        CAM_BASE.x + Math.sin(yaw) * 0.6,
+        CAM_BASE.y + bob,
+        CAM_BASE.z,
+      );
+      const look = new THREE.Vector3(
+        LOOK.x + Math.sin(yaw) * 1.4,
+        LOOK.y + pitch,
+        LOOK.z - Math.cos(yaw) * 0.2,
+      );
+      camera.lookAt(look);
+      renderer.render(scene, camera);
+      requestAnimationFrame(frame);
+    }
+    frame();
+
+    // Size + draw a frame whenever the container resizes - independent of
+    // requestAnimationFrame, so it works even before the first animation frame.
+    const ro = new ResizeObserver(() => {
+      if (root.clientWidth > 0 && root.clientHeight > 0) {
+        sizeRenderer();
+        renderer.render(scene, camera);
+      }
+    });
+    ro.observe(root);
+
+    if (loadingEl) loadingEl.style.display = "none";
+    (window as any).__u3d = { ok: true, objects: scene.children.length };
+  }
+
+  // ---- low-res canvas textures (nearest-filtered) -----------------------
+  function makeCardTexture(label: string, faceHex: string): THREE.Texture {
+    const c = document.createElement("canvas");
+    c.width = 64;
+    c.height = 96;
+    const x = c.getContext("2d")!;
+    x.fillStyle = "#eaeaec";
+    x.fillRect(0, 0, 64, 96);
+    x.fillStyle = faceHex;
+    x.fillRect(4, 6, 56, 84);
+    x.save();
+    x.translate(32, 48);
+    x.rotate(-0.34);
+    x.strokeStyle = "#eaeaec";
+    x.lineWidth = 4;
+    x.beginPath();
+    x.ellipse(0, 0, 15, 33, 0, 0, Math.PI * 2);
+    x.stroke();
+    x.restore();
+    x.textAlign = "center";
+    x.textBaseline = "middle";
+    x.lineWidth = 4;
+    x.strokeStyle = "#1e1e1e";
+    x.fillStyle = "#eaeaec";
+    x.font = "900 32px Arial";
+    x.strokeText(label, 32, 49);
+    x.fillText(label, 32, 49);
+    x.font = "900 13px Arial";
+    x.strokeText(label, 11, 13);
+    x.fillText(label, 11, 13);
+    return finishTexture(c);
+  }
+
+  function makeBackTexture(): THREE.Texture {
+    const c = document.createElement("canvas");
+    c.width = 64;
+    c.height = 96;
+    const x = c.getContext("2d")!;
+    x.fillStyle = "#eaeaec";
+    x.fillRect(0, 0, 64, 96);
+    x.fillStyle = "#1e1e1e";
+    x.fillRect(4, 6, 56, 84);
+    x.save();
+    x.translate(32, 48);
+    x.rotate(-0.34);
+    x.fillStyle = "#b01e35";
+    x.beginPath();
+    x.ellipse(0, 0, 15, 33, 0, 0, Math.PI * 2);
+    x.fill();
+    x.restore();
+    x.fillStyle = "#eaeaec";
+    x.font = "900 26px Arial";
+    x.textAlign = "center";
+    x.textBaseline = "middle";
+    x.fillText("U", 32, 49);
+    return finishTexture(c);
+  }
+
+  function finishTexture(c: HTMLCanvasElement): THREE.Texture {
+    const t = new THREE.CanvasTexture(c);
+    t.magFilter = THREE.NearestFilter;
+    t.minFilter = THREE.NearestFilter;
+    t.generateMipmaps = false;
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }
+</script>

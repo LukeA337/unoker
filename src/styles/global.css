@@ -530,6 +530,75 @@ table.rankings td.rank-name { font-weight: bold; white-space: nowrap; }
 }
 .log div { margin: 1px 0; }
 
+/* ========================================================================
+   UNOKER 3D  -  the first-person PS1 prototype on /play-3d
+   ======================================================================== */
+.scene3d {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  margin: 12px auto;
+  aspect-ratio: 4 / 3;
+  background: #000000;
+  border: 4px ridge var(--silver);
+  overflow: hidden;
+  cursor: grab;
+}
+.scene3d:active { cursor: grabbing; }
+.scene3d-canvas { position: absolute; inset: 0; }
+.scene3d-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  image-rendering: pixelated; /* the chunky PS1 upscale */
+}
+.scene3d-ui {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+}
+.scene3d-title {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-weight: bold;
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 #000000;
+}
+.scene3d-hand {
+  flex: 1;
+  color: #ffffff;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #000000;
+}
+.scene3d-btn {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-weight: bold;
+  background: var(--lime);
+  color: #000000;
+  border: 3px outset var(--silver);
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.scene3d-btn:hover { background: var(--yellow); }
+.scene3d-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+  color: var(--lime);
+  background: #000000;
+  font-family: "Courier New", monospace;
+}
+
 /* Mobile: the 90s did not have phones, but we are kind. */
 @media (max-width: 520px) {
   .sitetitle { font-size: 38px; }

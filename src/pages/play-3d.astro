@@ -1,0 +1,22 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Game3D from "../components/Game3D.astro";
+---
+<BaseLayout title="UNOKER.NET - UNOKER 3D" active="play3d">
+  <h2 class="section">&#127183; UNOKER 3D &#127183;</h2>
+  <p class="blink" style="color:var(--lime); font-family:'Courier New', monospace;">
+    ~ EXPERIMENTAL ~ first-person PlayStation-era prototype ~
+  </p>
+
+  <!-- A SECOND renderer over the same engine as /play. The plain 2D game is
+       untouched and still lives at PLAY NOW!. -->
+  <Game3D />
+
+  <div class="panel">
+    <p>
+      A first-person, PS1-style take on the table &mdash; your own hands hold the cards.
+      This is an early prototype with placeholder opponents; the full, playable game is
+      the 2D <a href="/play">PLAY NOW!</a> table. <b>Drag to look around.</b>
+    </p>
+  </div>
+</BaseLayout>

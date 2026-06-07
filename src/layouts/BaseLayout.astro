@@ -4,7 +4,7 @@ import "../styles/global.css";
 
 export interface Props {
   title: string;
-  active?: "home" | "rules" | "play";
+  active?: "home" | "rules" | "play" | "play3d";
 }
 const { title, active = "home" } = Astro.props;
 ---
@@ -31,6 +31,7 @@ const { title, active = "home" } = Astro.props;
         <a href="/" class={active === "home" ? "active" : ""}>HOME</a>
         <a href="/rules" class={active === "rules" ? "active" : ""}>THE RULES</a>
         <a href="/play" class={active === "play" ? "active" : ""}>PLAY NOW!</a>
+        <a href="/play-3d" class={active === "play3d" ? "active" : ""}>UNOKER 3D</a>
       </nav>
 
       <hr class="candy" />

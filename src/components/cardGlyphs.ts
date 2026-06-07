@@ -19,17 +19,19 @@ function skipSvg(): string {
 }
 
 function reverseSvg(): string {
-  // Two arrows with 180-degree rotational symmetry: the left one points up, the
-  // right one points down, and their tails curve toward each other into a loop -
-  // the classic UNO "reverse" look.
+  // The classic UNO reverse: two arrows with 180-degree rotational symmetry,
+  // one pointing TOP-RIGHT and one BOTTOM-LEFT. Built as a vertical up/down pair
+  // (tails curving into an S) then rotated 45 degrees onto the diagonal.
   return (
     `<svg class="glyph" viewBox="0 0 40 40" aria-hidden="true">` +
-    `<g fill="none" stroke="#eaeaec" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">` +
-    `<path d="M15 10 L15 21 C 15 26 19 28 24 27"/>` +
-    `<path d="M25 30 L25 19 C 25 14 21 12 16 13"/>` +
+    `<g transform="rotate(45 20 20)">` +
+    `<g fill="none" stroke="#eaeaec" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">` +
+    `<path d="M15 11 L15 21 C 15 26 19 28 24 27"/>` +
+    `<path d="M25 29 L25 19 C 25 14 21 12 16 13"/>` +
     `</g>` +
-    `<polygon points="15,6 10,15 20,15" fill="#eaeaec"/>` +
-    `<polygon points="25,34 20,25 30,25" fill="#eaeaec"/>` +
+    `<polygon points="15,5 9,15 21,15" fill="#eaeaec"/>` +
+    `<polygon points="25,35 19,25 31,25" fill="#eaeaec"/>` +
+    `</g>` +
     `</svg>`
   );
 }
