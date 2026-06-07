@@ -1,0 +1,18 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import GamePlaceholder from "../components/GamePlaceholder.astro";
+---
+<BaseLayout title="UNOKER.NET - Play Now!" active="play">
+  <h2 class="section">&#127183; THE TABLE &#127183;</h2>
+
+  <!-- SWAP POINT: replace <GamePlaceholder /> with your game island later,
+       e.g. <Game client:load /> imported from a component backed by src/engine/. -->
+  <GamePlaceholder />
+
+  <div class="panel">
+    <p>
+      While the table is being built, brush up on
+      <a href="/rules">the rules</a> so you're ready to clean up when it goes live.
+    </p>
+  </div>
+</BaseLayout>

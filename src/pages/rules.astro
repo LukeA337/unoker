@@ -1,0 +1,279 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Card from "../components/Card.astro";
+---
+<BaseLayout title="UNOKER.NET - The Rules" active="rules">
+  <h2 class="section">&#128214; THE ULTIMATE GUIDE &#128214;</h2>
+
+  <!-- ================= THE DECK ================= -->
+  <div class="panel">
+    <h2 style="color:var(--navy);">The Deck</h2>
+
+    <h3>Numbered Cards</h3>
+    <p>
+      The UNOKER deck has 4 colors, each containing values from 0 to 10.
+      Each color contains only one <b>0</b>, but <b>two</b> of each value from 1 to 10.
+    </p>
+    <div class="card-row">
+      <Card color="red" label="0" />
+      <Card color="red" label="1" />
+      <Card color="red" label="2" />
+      <Card color="red" label="3" />
+      <Card color="red" label="4" />
+      <Card color="red" label="5" />
+      <Card color="red" label="6" />
+      <Card color="red" label="7" />
+      <Card color="red" label="8" />
+      <Card color="red" label="9" />
+      <Card color="red" label="10" />
+    </div>
+
+    <h3>Power-Ups</h3>
+    <p>The UNOKER deck contains two types of Power-Ups: <b>Wild Cards</b> and <b>Copy Cards</b>.</p>
+
+    <p>
+      <b>Wild Cards</b> are the simplest type of Power-Up. They can turn into any numbered
+      card (any color and any value from 0 to 10) &mdash; whatever's best for your hand.
+      There are <b>4 Wild Cards</b> in the deck.
+    </p>
+    <div class="card-row">
+      <Card color="wild" label="W" />
+    </div>
+
+    <p>
+      <b>Copy Cards</b> are a little more complex. Their value depends on the value of the
+      card to their <b>left</b> within your hand. Unlike in other varieties of poker,
+      <b>the order of cards in your hand matters</b>. There are 3 types of copy cards:
+    </p>
+
+    <p><b>Basic Copy Card</b> &mdash; directly copies the value (but not the color) of the
+      card to its left. There are two Basic Copy Cards per color.</p>
+    <div class="card-row">
+      <Card color="copy" label="C" />
+    </div>
+
+    <p><b>Copy +2</b> &mdash; copies the value (but not the color) of the card to its left
+      and adds 2. Can produce values over 10. There are two Copy +2 Cards per color.</p>
+    <div class="card-row">
+      <Card color="copy" label="+2" />
+    </div>
+
+    <p><b>Copy +4</b> &mdash; copies the value of the card to its left and adds 4. Can
+      produce values over 10. Like Wild Cards, Copy +4 cards can count as any color for
+      the purposes of a flush. There are four Copy +4 Cards in the deck.</p>
+    <div class="card-row">
+      <Card color="copy" label="+4" />
+    </div>
+
+    <div class="panel loud">
+      <h3 style="color:var(--navy);">Important properties of Copy Cards</h3>
+      <ul style="line-height:1.7;">
+        <li>Only the <b>value</b> of the card to the left is copied, <b>not</b> its color.</li>
+        <li>The card to the left may be another Power-Up. You can chain together multiple Copy Cards.</li>
+        <li>If there is no card to the left of a Copy Card (it's the leftmost card in your hand), it acts as if there were a <b>0</b> to its left.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ================= HAND RANKINGS ================= -->
+  <div class="panel teal">
+    <h2 style="color:var(--yellow);">Hand Rankings</h2>
+    <p>
+      Hand rankings in UNOKER are noticeably different from other poker variants.
+      <b>Five of a Kind</b> has been added, as well as many kinds of <b>Flushes</b>.
+      The relative rankings have been adjusted based on simulated probability.
+      Here are all the possible hands, ranked from <b>best to worst</b>:
+    </p>
+
+    <table class="rankings">
+      <thead>
+        <tr><th>#</th><th>Hand</th><th>What it is</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="rank-name"><span class="flush-tag">Five of a Kind Flush</span></td><td>5 of the same color and value</td></tr>
+        <tr><td>2</td><td class="rank-name"><span class="flush-tag">Full House Flush</span></td><td>5 of the same color; 3 have one value and 2 have another value</td></tr>
+        <tr><td>3</td><td class="rank-name"><span class="flush-tag">Straight Flush</span></td><td>5 of the same color; 5 values in a row</td></tr>
+        <tr><td>4</td><td class="rank-name"><span class="flush-tag">Four of a Kind Flush</span></td><td>5 of the same color; 4 have the same value</td></tr>
+        <tr><td>5</td><td class="rank-name"><span class="flush-tag">Two Pair Flush</span></td><td>5 of the same color; 2 have one value and 2 have another value</td></tr>
+        <tr><td>6</td><td class="rank-name">Five of a Kind</td><td>5 of the same value</td></tr>
+        <tr><td>7</td><td class="rank-name"><span class="flush-tag">Three of a Kind Flush</span></td><td>5 of the same color; 3 have the same value</td></tr>
+        <tr><td>8</td><td class="rank-name"><span class="flush-tag">One Pair Flush</span></td><td>5 of the same color; 2 have the same value</td></tr>
+        <tr><td>9</td><td class="rank-name"><span class="flush-tag">Uno Flush</span></td><td>5 of the same color; each card has a different value</td></tr>
+        <tr><td>10</td><td class="rank-name">Straight</td><td>5 values in a row</td></tr>
+        <tr><td>11</td><td class="rank-name">Full House</td><td>3 of one value and 2 of another value</td></tr>
+        <tr><td>12</td><td class="rank-name">Four of a Kind</td><td>4 of the same value</td></tr>
+        <tr><td>13</td><td class="rank-name">Two Pair</td><td>2 of one value and 2 of another value</td></tr>
+        <tr><td>14</td><td class="rank-name">Three of a Kind</td><td>3 of the same value</td></tr>
+        <tr><td>15</td><td class="rank-name">One Pair</td><td>2 of the same value</td></tr>
+        <tr><td>16</td><td class="rank-name">Uno *</td><td>each card has a different value</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px; color:#ffffcc;">* Uno (also known as High Card) is not a good hand in UNOKER.</p>
+
+    <h3 style="color:var(--yellow);">Tie Breakers</h3>
+    <p>
+      When more than one player has a certain type of hand, ties are broken by comparing
+      the values of the cards. Start by comparing groups of the same value. For example:
+    </p>
+    <ul>
+      <li>If multiple players have Two Pair, start by comparing each player's highest pair.</li>
+      <li>If multiple players have a Full House, start by comparing each player's group of 3.</li>
+    </ul>
+  </div>
+
+  <!-- ================= EXAMPLE HANDS ================= -->
+  <div class="panel">
+    <h2 style="color:var(--navy);">Example Hands</h2>
+    <p style="font-size:13px; color:var(--gray);">
+      Card art below is original (not Uno's). "C" = basic copy, "+2"/"+4" = copy cards, "W" = wild.
+      Captions show each card's resolved value.
+    </p>
+
+    <h3>Uno</h3>
+    <div class="card-row">
+      <Card color="red" label="2" caption="2" />
+      <Card color="green" label="3" caption="3" />
+      <Card color="red" label="4" caption="4" />
+      <Card color="blue" label="5" caption="5" />
+      <Card color="red" label="9" caption="9" />
+    </div>
+
+    <h3>One Pair</h3>
+    <div class="card-row">
+      <Card color="red" label="2" caption="2" />
+      <Card color="green" label="3" caption="3" />
+      <Card color="red" label="4" caption="4" />
+      <Card color="blue" label="5" caption="5" />
+      <Card color="yellow" label="C" caption="C = 5" />
+    </div>
+
+    <h3>Three of a Kind</h3>
+    <div class="card-row">
+      <Card color="red" label="1" caption="1" />
+      <Card color="green" label="5" caption="5" />
+      <Card color="copy" label="+4" caption="C+4 = 9" />
+      <Card color="blue" label="C" caption="C = 9" />
+      <Card color="wild" label="W" caption="W = 9" />
+    </div>
+    <p>Rearrange the same cards and you can make a <b>Four of a Kind</b>, which is better:</p>
+    <div class="card-row">
+      <Card color="red" label="1" caption="1" />
+      <Card color="copy" label="+4" caption="C+4 = 5" />
+      <Card color="green" label="5" caption="5" />
+      <Card color="blue" label="C" caption="C = 5" />
+      <Card color="wild" label="W" caption="W = 5" />
+    </div>
+
+    <h3>Full House</h3>
+    <div class="card-row">
+      <Card color="blue" label="8" caption="8" />
+      <Card color="yellow" label="8" caption="8" />
+      <Card color="copy" label="+2" caption="C+2 = 10" />
+      <Card color="blue" label="C" caption="C = 10" />
+      <Card color="green" label="10" caption="10" />
+    </div>
+
+    <h3>Straight</h3>
+    <div class="card-row">
+      <Card color="red" label="9" caption="9" />
+      <Card color="red" label="+2" caption="C+2 = 11" />
+      <Card color="red" label="+2" caption="C+2 = 13" />
+      <Card color="yellow" label="10" caption="10" />
+      <Card color="blue" label="+2" caption="C+2 = 12" />
+    </div>
+    <p style="font-style:italic;">The highest possible straight is 9 to 13.</p>
+
+    <h3>Uno Flush</h3>
+    <div class="card-row">
+      <Card color="green" label="0" caption="0" />
+      <Card color="green" label="4" caption="4" />
+      <Card color="wild" label="W" caption="W = 10" />
+      <Card color="copy" label="+4" caption="C+4 = 14" />
+      <Card color="copy" label="+2" caption="C+2 = 16" />
+    </div>
+    <p>Rearrange the same cards for a <b>Three of a Kind Flush</b>:</p>
+    <div class="card-row">
+      <Card color="copy" label="+4" caption="C+4 = 4" />
+      <Card color="green" label="4" caption="4" />
+      <Card color="wild" label="W" caption="W = 4" />
+      <Card color="copy" label="+2" caption="C+2 = 6" />
+      <Card color="green" label="0" caption="0" />
+    </div>
+    <p>Or arrange them this way for a <b>Two Pair Flush</b>, which is even better:</p>
+    <div class="card-row">
+      <Card color="copy" label="+4" caption="C+4 = 4" />
+      <Card color="green" label="4" caption="4" />
+      <Card color="copy" label="+2" caption="C+2 = 6" />
+      <Card color="wild" label="W" caption="W = 6" />
+      <Card color="green" label="0" caption="0" />
+    </div>
+
+    <h3>Straight Flush</h3>
+    <div class="card-row">
+      <Card color="yellow" label="8" caption="8" />
+      <Card color="yellow" label="9" caption="9" />
+      <Card color="yellow" label="+2" caption="C+2 = 11" />
+      <Card color="yellow" label="10" caption="10" />
+      <Card color="yellow" label="+2" caption="C+2 = 12" />
+    </div>
+    <p style="font-style:italic;">The highest possible straight flush is 8 to 12.</p>
+
+    <h3>Five of a Kind Flush</h3>
+    <div class="card-row">
+      <Card color="blue" label="6" caption="6" />
+      <Card color="blue" label="6" caption="6" />
+      <Card color="blue" label="C" caption="C = 6" />
+      <Card color="wild" label="W" caption="W = 6" />
+      <Card color="wild" label="W" caption="W = 6" />
+    </div>
+  </div>
+
+  <!-- ================= GAMEPLAY ================= -->
+  <div class="panel loud">
+    <h2 style="color:var(--navy);">Gameplay</h2>
+
+    <h3>Setup</h3>
+    <p>
+      At the beginning of each hand, the dealer rotates clockwise. The player to the left
+      of the dealer (the <b>small blind</b>) places half the minimum bet, then the player
+      to the left of the small blind (the <b>big blind</b>) places the full minimum bet.
+      Each player is dealt <b>five cards face down</b>.
+    </p>
+
+    <h3>Round 1 &mdash; Betting</h3>
+    <p>A round of betting occurs in clockwise order starting with the player to the left of the big blind.</p>
+    <ul style="line-height:1.7;">
+      <li>If no one has bet yet, you can <b>bet</b> or <b>check</b> (refrain from betting).</li>
+      <li>If someone before you has bet, you can <b>call</b> (match the highest bet), <b>raise</b> (bet more than the highest bet), or <b>fold</b> (give up your hand).</li>
+      <li>Betting continues until everyone who hasn't folded has the same number of chips in the pot.</li>
+    </ul>
+
+    <h3>Round 2 &mdash; Drawing, then Betting</h3>
+    <p>
+      After the first round of betting, each player can discard <b>up to 2 cards</b> and
+      draw that many from the deck. This happens in clockwise order starting with the first
+      player to the dealer's left who hasn't folded. Then a second round of betting kicks
+      off, starting with that same first non-folded player.
+    </p>
+
+    <h3>Round 3 &mdash; Drawing, then Betting</h3>
+    <p>
+      Each player can discard <b>up to 1 card</b> and draw a replacement. The third round
+      of betting follows the same pattern as the second round.
+    </p>
+
+    <h3>Showdown</h3>
+    <p>
+      If two or more players still haven't folded, those players put their hands on the
+      table face down, then flip them over. Because <b>the order of cards in your hand
+      matters</b>, you can't rearrange your cards after flipping them over, even if you
+      spot a better arrangement. Wild cards count as whatever makes the best hand. Whoever
+      has the best hand wins; if two or more hands are tied, those players split the pot.
+    </p>
+  </div>
+
+  <div class="panel teal" style="text-align:center;">
+    <h3 style="color:var(--yellow);">Think you've got it?</h3>
+    <p><a href="/play" style="font-size:20px; font-weight:bold; color:var(--cyan);">&#9654;&#9654; PLAY NOW! &#9664;&#9664;</a></p>
+  </div>
+</BaseLayout>

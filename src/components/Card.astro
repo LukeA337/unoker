@@ -1,0 +1,22 @@
+---
+// Card.astro - a single original-art UNOKER card face.
+// color: red | green | blue | yellow | wild | copy
+// label: what shows in the center (e.g. "5", "W", "+2", "+4", "C")
+// caption: optional small text under the card (used in rules examples)
+export interface Props {
+  color: "red" | "green" | "blue" | "yellow" | "wild" | "copy";
+  label: string;
+  caption?: string;
+}
+const { color, label, caption } = Astro.props;
+const colorClass = `c-${color}`;
+const showCorners = color !== "wild" && color !== "copy";
+---
+<div class="card-with-caption">
+  <div class={`uno-card ${colorClass}`}>
+    {showCorners && <span class="corner tl">{label}</span>}
+    <span class="pip"><span class="val">{label}</span></span>
+    {showCorners && <span class="corner br">{label}</span>}
+  </div>
+  {caption && <span class="card-caption">{caption}</span>}
+</div>

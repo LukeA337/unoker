@@ -1,0 +1,29 @@
+---
+// GamePlaceholder.astro
+//
+// This is the SWAP POINT. When you build the game, you replace the single
+// line in src/pages/play.astro that renders <GamePlaceholder /> with your
+// game component (e.g. an Astro island: <Game client:load />). Nothing else
+// about the site needs to change. Keep that boundary clean.
+//
+// The game logic itself should live in src/engine/ as a pure, framework-free
+// TypeScript module so the SAME code can run client-side now and on a
+// Cloudflare Workers + Durable Objects server when you add multiplayer.
+---
+<div class="construction">
+  <div class="hazard-bar"></div>
+  <span class="digger">&#128679;</span>
+  <h2 class="blink">UNDER CONSTRUCTION</h2>
+  <span class="digger">&#9935;</span>
+  <div class="hazard-bar"></div>
+
+  <p style="color:#ffffff; font-family:'Courier New', monospace; font-size:15px;">
+    The UNOKER game engine is being hand-coded right now.
+  </p>
+  <p style="color:var(--cyan); font-family:'Courier New', monospace; font-size:14px;">
+    Single player vs. up to 3 computer opponents. Check back soon!
+  </p>
+  <p style="color:var(--yellow); font-family:'Courier New', monospace; font-size:12px;">
+    [ multiplayer planned for a future update ]
+  </p>
+</div>

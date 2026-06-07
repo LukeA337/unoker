@@ -1,0 +1,43 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Card from "../components/Card.astro";
+---
+<BaseLayout title="UNOKER.NET - Poker with an Uno deck" active="home">
+  <div class="panel loud">
+    <h2 style="text-align:center; color:var(--navy);">&#11088; Welcome, traveler of the World Wide Web! &#11088;</h2>
+    <p style="font-size:17px; text-align:center;">
+      <b>UNOKER</b> is the hit card game that mashes up <b>Poker</b> and <b>Uno</b>.
+      Five-card hands, wild cards, copy cards, and a whole new set of hand rankings.
+      You came to the right corner of the internet to learn it.
+    </p>
+  </div>
+
+  <div class="card-row">
+    <Card color="red" label="2" />
+    <Card color="green" label="3" />
+    <Card color="blue" label="5" />
+    <Card color="yellow" label="9" />
+    <Card color="wild" label="W" />
+  </div>
+
+  <div class="panel teal">
+    <h3 style="color:var(--yellow);">What's inside &#128071;</h3>
+    <ul style="font-size:16px; line-height:1.8;">
+      <li><b><a href="/rules">THE RULES</a></b> &mdash; the full guide: the deck, power-ups, every hand ranking, and how a round plays out.</li>
+      <li><b><a href="/play">PLAY NOW!</a></b> &mdash; take on up to 3 computer opponents. <span class="blink" style="color:var(--yellow)">(coming soon!)</span></li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h3>Brand new to the game?</h3>
+    <p>
+      Start with <a href="/rules">THE RULES</a>. The deck looks like Uno, but the
+      values, the power-ups, and the hand rankings all play differently. Even if you
+      know poker cold, the rankings here are reshuffled. Two Pair Flush beats Five of
+      a Kind. Read first, deal later.
+    </p>
+    <p style="text-align:center;">
+      <a href="/play" style="font-size:20px; font-weight:bold;">&#9654;&#9654; I'm ready, take me to the table &#9664;&#9664;</a>
+    </p>
+  </div>
+</BaseLayout>

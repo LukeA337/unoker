@@ -1,0 +1,341 @@
+/* ========================================================================
+   UNOKER.NET  -  global stylesheet
+   AESTHETIC: 1990s "early internet" / GeoCities / Web 1.0 maximalism.
+   Web-safe colors, beveled borders, tiled backgrounds, system fonts,
+   clashing palette, blinking text. Deliberately anti-modern. Lean in.
+   ======================================================================== */
+
+:root {
+  /* The 90s "web-safe" palette. Loud on purpose. */
+  --hotpink:  #ff00ff;
+  --cyan:     #00ffff;
+  --lime:     #00ff00;
+  --yellow:   #ffff00;
+  --red:      #ff0000;
+  --blue:     #0000ff;
+  --purple:   #800080;
+  --teal:     #008080;
+  --navy:     #000080;
+  --silver:   #c0c0c0;
+  --gray:     #808080;
+
+  /* The four UNOKER card colors */
+  --card-red:    #d40000;
+  --card-green:  #009e2c;
+  --card-blue:   #0050d4;
+  --card-yellow: #f5c400;
+
+  /* Classic Windows-95 bevel edges */
+  --bevel-light: #ffffff;
+  --bevel-dark:  #404040;
+}
+
+/* Tiled "starfield on midnight blue" background. Drawn as an inline SVG
+   data-URI so there are no external GIFs to 404. Peak 90s. */
+html {
+  background-color: #000033;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23000033'/%3E%3Ccircle cx='8' cy='12' r='1' fill='%23ffffff'/%3E%3Ccircle cx='40' cy='6' r='1.2' fill='%2300ffff'/%3E%3Ccircle cx='52' cy='30' r='1' fill='%23ffffff'/%3E%3Ccircle cx='20' cy='44' r='1.4' fill='%23ffff00'/%3E%3Ccircle cx='58' cy='54' r='1' fill='%23ffffff'/%3E%3Ccircle cx='30' cy='24' r='1' fill='%23ff00ff'/%3E%3Ccircle cx='4' cy='52' r='1.1' fill='%23ffffff'/%3E%3C/svg%3E");
+}
+
+body {
+  font-family: "Times New Roman", Times, serif;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+/* The whole site lives inside a centered "table" column, like it's 1997. */
+.page-shell {
+  width: 90%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 12px 0 40px;
+  text-align: center;
+}
+
+/* ---- The bordered "panel" look used for every content block ---- */
+.panel {
+  background: var(--silver);
+  color: #000000;
+  border-top: 3px solid var(--bevel-light);
+  border-left: 3px solid var(--bevel-light);
+  border-right: 3px solid var(--bevel-dark);
+  border-bottom: 3px solid var(--bevel-dark);
+  padding: 16px 20px;
+  margin: 18px 0;
+  text-align: left;
+}
+
+.panel.loud {
+  background: var(--yellow);
+}
+.panel.teal {
+  background: var(--teal);
+  color: #ffffff;
+}
+
+/* ---- Headings ---- */
+h1, h2, h3 {
+  font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+  margin: 0.3em 0;
+}
+
+.sitetitle {
+  font-size: 56px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  /* rainbow text via background-clip, the modern way to fake a 90s gradient GIF */
+  background: linear-gradient(90deg,
+    var(--red), var(--yellow), var(--lime), var(--cyan), var(--blue), var(--hotpink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 3px 3px 0 #000000;
+  margin: 6px 0 0;
+}
+
+.tagline {
+  font-family: "Courier New", Courier, monospace;
+  color: var(--lime);
+  font-size: 15px;
+  margin: 4px 0 10px;
+}
+
+h2.section {
+  background: var(--navy);
+  color: var(--yellow);
+  display: inline-block;
+  padding: 4px 18px;
+  border: 2px outset var(--cyan);
+  font-size: 26px;
+}
+
+/* ---- Marquee (the real deprecated tag is used in markup; this styles it) ---- */
+marquee {
+  background: #000000;
+  color: var(--lime);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 5px 0;
+  border-top: 2px solid var(--lime);
+  border-bottom: 2px solid var(--lime);
+}
+
+/* ---- Blinking text, CSS reimplementation of <blink> ---- */
+.blink {
+  animation: blink-anim 1s steps(2, start) infinite;
+  font-weight: bold;
+}
+@keyframes blink-anim {
+  to { visibility: hidden; }
+}
+
+/* ---- Navigation bar ("webring" style) ---- */
+.navbar {
+  margin: 14px 0;
+}
+.navbar a {
+  display: inline-block;
+  background: var(--silver);
+  color: var(--navy);
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  text-decoration: none;
+  padding: 6px 16px;
+  margin: 3px;
+  border: 3px outset var(--silver);
+}
+.navbar a:hover {
+  background: var(--yellow);
+  border-style: inset;
+}
+.navbar a.active {
+  background: var(--hotpink);
+  color: #ffffff;
+}
+
+/* ---- Generic links inside content ---- */
+.panel a { color: var(--blue); }
+.panel a:visited { color: var(--purple); }
+
+/* ---- Horizontal rule, candy-stripe ---- */
+hr.candy {
+  height: 6px;
+  border: none;
+  background: repeating-linear-gradient(
+    45deg, var(--red), var(--red) 10px,
+    var(--yellow) 10px, var(--yellow) 20px);
+  margin: 18px 0;
+}
+
+/* ========================================================================
+   CARD FACES  -  original CSS art (NOT Uno's trademarked design)
+   ======================================================================== */
+.card-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 14px 0;
+}
+.uno-card {
+  width: 58px;
+  height: 86px;
+  border-radius: 9px;
+  border: 3px solid #ffffff;
+  box-shadow: 2px 2px 0 #000000;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  flex: 0 0 auto;
+}
+.uno-card .pip {
+  /* the white oval behind the numeral */
+  background: #ffffff;
+  width: 34px;
+  height: 56px;
+  border-radius: 50%;
+  transform: rotate(-20deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.uno-card .val {
+  transform: rotate(20deg);
+  font-size: 26px;
+  font-style: italic;
+}
+.uno-card .corner {
+  position: absolute;
+  font-size: 12px;
+  color: #ffffff;
+  font-style: italic;
+}
+.uno-card .corner.tl { top: 3px; left: 5px; }
+.uno-card .corner.br { bottom: 3px; right: 5px; transform: rotate(180deg); }
+
+.c-red    { background: var(--card-red); }
+.c-red    .val { color: var(--card-red); }
+.c-green  { background: var(--card-green); }
+.c-green  .val { color: var(--card-green); }
+.c-blue   { background: var(--card-blue); }
+.c-blue   .val { color: var(--card-blue); }
+.c-yellow { background: var(--card-yellow); }
+.c-yellow .val { color: #b8860b; }
+
+/* Wild + copy power-up faces */
+.c-wild { background: conic-gradient(var(--card-red) 0 90deg, var(--card-blue) 90deg 180deg, var(--card-yellow) 180deg 270deg, var(--card-green) 270deg 360deg); }
+.c-wild .pip { background: rgba(255,255,255,0.85); }
+.c-wild .val { color: #000000; font-size: 18px; }
+.c-copy { background: #111111; }
+.c-copy .val { color: #ffffff; font-size: 16px; }
+
+.card-caption {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  text-align: center;
+  color: #000000;
+  margin-top: 3px;
+}
+.card-with-caption { display: inline-flex; flex-direction: column; align-items: center; }
+
+/* ========================================================================
+   HAND RANKINGS TABLE
+   ======================================================================== */
+table.rankings {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Times New Roman", serif;
+}
+table.rankings th {
+  background: var(--navy);
+  color: var(--yellow);
+  padding: 6px;
+  border: 2px solid #000000;
+}
+table.rankings td {
+  padding: 5px 8px;
+  border: 1px solid var(--gray);
+  vertical-align: top;
+  color: #000000; /* override the white panel text; rows are light */
+}
+table.rankings tr:nth-child(odd) td { background: #ffffcc; }
+table.rankings tr:nth-child(even) td { background: #ccffff; }
+table.rankings td.rank-name { font-weight: bold; white-space: nowrap; }
+.flush-tag { color: var(--card-red); }
+
+/* ========================================================================
+   "UNDER CONSTRUCTION" game placeholder
+   ======================================================================== */
+.construction {
+  background: #000000;
+  border: 6px solid;
+  border-image: repeating-linear-gradient(
+    45deg, var(--yellow), var(--yellow) 14px,
+    #000000 14px, #000000 28px) 6;
+  padding: 30px 20px;
+  margin: 18px 0;
+}
+.construction h2 {
+  color: var(--yellow);
+  font-size: 30px;
+  text-shadow: 2px 2px 0 var(--red);
+}
+.hazard-bar {
+  height: 22px;
+  background: repeating-linear-gradient(
+    45deg, var(--yellow), var(--yellow) 14px,
+    #000000 14px, #000000 28px);
+  margin: 14px 0;
+}
+.digger {
+  font-size: 60px;
+  animation: dig 0.6s ease-in-out infinite alternate;
+  display: inline-block;
+}
+@keyframes dig {
+  from { transform: rotate(-12deg) translateY(0); }
+  to   { transform: rotate(12deg) translateY(-6px); }
+}
+
+/* ========================================================================
+   FOOTER junk: visitor counter, browser badge, etc.
+   ======================================================================== */
+.footer-junk {
+  margin-top: 26px;
+  color: var(--silver);
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+}
+.counter {
+  display: inline-block;
+  background: #000000;
+  color: var(--lime);
+  font-family: "Courier New", monospace;
+  font-size: 20px;
+  letter-spacing: 4px;
+  padding: 3px 8px;
+  border: 2px inset var(--silver);
+}
+.badge {
+  display: inline-block;
+  background: var(--silver);
+  color: #000000;
+  border: 2px outset var(--silver);
+  padding: 3px 8px;
+  margin: 4px;
+  font-family: "MS Sans Serif", "Courier New", monospace;
+  font-size: 11px;
+}
+
+/* Mobile: the 90s did not have phones, but we are kind. */
+@media (max-width: 520px) {
+  .sitetitle { font-size: 38px; }
+  .page-shell { width: 94%; }
+}

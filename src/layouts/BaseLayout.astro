@@ -1,0 +1,56 @@
+---
+// BaseLayout.astro - the site chrome wrapped around every page.
+import "../styles/global.css";
+
+export interface Props {
+  title: string;
+  active?: "home" | "rules" | "play";
+}
+const { title, active = "home" } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="UNOKER - how to play Poker with an Uno deck. Rules, hand rankings, and (soon) a game you can play against the computer." />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <marquee scrollamount="6" behavior="scroll" direction="left">
+      *** WELCOME TO UNOKER.NET *** the ULTIMATE guide to playing POKER with an UNO deck ***
+      now serving 5-card hands since 1997 *** tell a friend! *** sign the guestbook! ***
+    </marquee>
+
+    <div class="page-shell">
+      <h1 class="sitetitle">UNOKER</h1>
+      <p class="tagline">&gt;&gt; how to play Poker with an Uno deck &lt;&lt;</p>
+
+      <nav class="navbar">
+        <a href="/" class={active === "home" ? "active" : ""}>HOME</a>
+        <a href="/rules" class={active === "rules" ? "active" : ""}>THE RULES</a>
+        <a href="/play" class={active === "play" ? "active" : ""}>PLAY NOW!</a>
+      </nav>
+
+      <hr class="candy" />
+
+      <slot />
+
+      <hr class="candy" />
+
+      <div class="footer-junk">
+        <p>
+          You are visitor number
+          <span class="counter">00013337</span>
+        </p>
+        <p>
+          <span class="badge">Best viewed in Netscape Navigator 4.0</span>
+          <span class="badge">800x600</span>
+          <span class="badge">Made with a text editor</span>
+        </p>
+        <p><span class="blink" style="color:var(--cyan)">&#9733; UNOKER.NET &#9733;</span> &copy; 1997-{new Date().getFullYear()}</p>
+      </div>
+    </div>
+  </body>
+</html>
