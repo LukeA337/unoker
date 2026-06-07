@@ -27,6 +27,10 @@ import Card from "../components/Card.astro";
       <Card color="red" label="9" />
       <Card color="red" label="10" />
     </div>
+    <p style="font-size:13px; color:var(--gray);">
+      Like a real UNO deck, there's no "10" pip &mdash; the value <b>10</b> is drawn as a
+      <b>skip</b> card (the circle-slash above).
+    </p>
 
     <h3>Power-Ups</h3>
     <p>The UNOKER deck contains two types of Power-Ups: <b>Wild Cards</b> and <b>Copy Cards</b>.</p>
@@ -47,20 +51,27 @@ import Card from "../components/Card.astro";
     </p>
 
     <p><b>Basic Copy Card</b> &mdash; directly copies the value (but not the color) of the
-      card to its left. There are two Basic Copy Cards per color.</p>
+      card to its left. Drawn as a <b>reverse</b> card, and it comes in all four colors
+      (two per color).</p>
     <div class="card-row">
-      <Card color="copy" label="C" />
+      <Card color="red" label="C" />
+      <Card color="green" label="C" />
+      <Card color="blue" label="C" />
+      <Card color="yellow" label="C" />
     </div>
 
     <p><b>Copy +2</b> &mdash; copies the value (but not the color) of the card to its left
-      and adds 2. Can produce values over 10. There are two Copy +2 Cards per color.</p>
+      and adds 2. Can produce values over 10. Comes in all four colors (two per color).</p>
     <div class="card-row">
-      <Card color="copy" label="+2" />
+      <Card color="red" label="+2" />
+      <Card color="green" label="+2" />
+      <Card color="blue" label="+2" />
+      <Card color="yellow" label="+2" />
     </div>
 
     <p><b>Copy +4</b> &mdash; copies the value of the card to its left and adds 4. Can
-      produce values over 10. Like Wild Cards, Copy +4 cards can count as any color for
-      the purposes of a flush. There are four Copy +4 Cards in the deck.</p>
+      produce values over 10. Like Wild Cards, Copy +4 cards are colorless and can count
+      as any color for the purposes of a flush. There are four Copy +4 Cards in the deck.</p>
     <div class="card-row">
       <Card color="copy" label="+4" />
     </div>
@@ -168,7 +179,7 @@ import Card from "../components/Card.astro";
     <div class="card-row">
       <Card color="blue" label="8" caption="8" />
       <Card color="yellow" label="8" caption="8" />
-      <Card color="copy" label="+2" caption="C+2 = 10" />
+      <Card color="green" label="+2" caption="C+2 = 10" />
       <Card color="blue" label="C" caption="C = 10" />
       <Card color="green" label="10" caption="10" />
     </div>
@@ -189,21 +200,21 @@ import Card from "../components/Card.astro";
       <Card color="green" label="4" caption="4" />
       <Card color="wild" label="W" caption="W = 10" />
       <Card color="copy" label="+4" caption="C+4 = 14" />
-      <Card color="copy" label="+2" caption="C+2 = 16" />
+      <Card color="green" label="+2" caption="C+2 = 16" />
     </div>
     <p>Rearrange the same cards for a <b>Three of a Kind Flush</b>:</p>
     <div class="card-row">
       <Card color="copy" label="+4" caption="C+4 = 4" />
       <Card color="green" label="4" caption="4" />
       <Card color="wild" label="W" caption="W = 4" />
-      <Card color="copy" label="+2" caption="C+2 = 6" />
+      <Card color="green" label="+2" caption="C+2 = 6" />
       <Card color="green" label="0" caption="0" />
     </div>
     <p>Or arrange them this way for a <b>Two Pair Flush</b>, which is even better:</p>
     <div class="card-row">
       <Card color="copy" label="+4" caption="C+4 = 4" />
       <Card color="green" label="4" caption="4" />
-      <Card color="copy" label="+2" caption="C+2 = 6" />
+      <Card color="green" label="+2" caption="C+2 = 6" />
       <Card color="wild" label="W" caption="W = 6" />
       <Card color="green" label="0" caption="0" />
     </div>

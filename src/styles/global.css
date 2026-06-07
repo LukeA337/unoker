@@ -19,11 +19,13 @@
   --silver:   #c0c0c0;
   --gray:     #808080;
 
-  /* The four UNOKER card colors */
-  --card-red:    #d40000;
-  --card-green:  #009e2c;
-  --card-blue:   #0050d4;
-  --card-yellow: #f5c400;
+  /* The four UNOKER card colors (exact hues from the modern UNO SVG) */
+  --card-red:    #b01e35;
+  --card-green:  #73aa2c;
+  --card-blue:   #075ca9;
+  --card-yellow: #ead426;
+  --card-cream:  #eaeaec; /* off-white frame / oval ring / numerals */
+  --card-ink:    #1e1e1e; /* dark outline + wild/copy face */
 
   /* Classic Windows-95 bevel edges */
   --bevel-light: #ffffff;
@@ -172,8 +174,9 @@ hr.candy {
 }
 
 /* ========================================================================
-   CARD FACES  -  CSS art styled after classic UNO cards: white-bordered
-   colour faces, a big tilted white oval, and the value echoed in the corners.
+   CARD FACES  -  CSS art matching the modern UNO card SVG: an off-white
+   frame, a colour face, a big tilted oval (colour centre + off-white ring),
+   and off-white numerals with a dark outline, echoed in two corners.
    ======================================================================== */
 .card-row {
   display: flex;
@@ -183,11 +186,11 @@ hr.candy {
   margin: 14px 0;
 }
 .uno-card {
-  width: 58px;
-  height: 88px;
-  border-radius: 10px;
-  border: 4px solid #ffffff;
-  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.45);
+  width: 60px;
+  height: 99px; /* SVG card ratio 85x140 */
+  border-radius: 8px;
+  border: 4px solid var(--card-cream); /* the off-white frame */
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -198,47 +201,89 @@ hr.candy {
   overflow: hidden;
 }
 .uno-card .pip {
-  /* the big tilted white oval that defines the UNO look */
-  background: #ffffff;
-  width: 36px;
-  height: 66px;
+  /* the big tilted oval: the colour face shows through the transparent centre,
+     the off-white border is the ring. Leans bottom-left -> top-right. */
+  width: 34px;
+  height: 72px;
   border-radius: 50%;
-  transform: rotate(-20deg);
+  border: 3px solid var(--card-cream);
+  background: transparent;
+  transform: rotate(20deg);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.uno-card .val {
-  transform: rotate(20deg);
-  font-size: 30px;
-  font-style: italic;
-  line-height: 1;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.18);
+/* counter-rotate so the numeral / icon / mini-cards sit upright in the oval */
+.uno-card .face {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-20deg);
 }
-.uno-card .val.small { font-size: 20px; } /* two-character values: 10, +2, +4 */
+.uno-card .val {
+  font-size: 34px;
+  line-height: 1;
+  color: var(--card-cream);
+  -webkit-text-stroke: 1.5px var(--card-ink);
+  paint-order: stroke fill;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+}
+.uno-card .val.small { font-size: 22px; } /* two-character values: +2, +4 */
+
+/* skip (= value 10) and reverse (= basic Copy) icons: cream line-art with a
+   dark outline (via drop-shadow), matching the numerals */
+.uno-card .face .glyph {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 0 1.1px var(--card-ink)) drop-shadow(0 0 1px var(--card-ink));
+}
+
+/* the stacked mini-cards on Copy +2 (two white) and Copy +4 (one per colour) */
+.uno-card .stack { position: relative; width: 32px; height: 44px; }
+.uno-card .mini {
+  position: absolute;
+  border-radius: 3px;
+  border: 2px solid var(--card-ink);
+  background: var(--c);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
+}
+.uno-card .stack2 .mini { width: 17px; height: 26px; }
+.uno-card .stack2 .mini:nth-child(1) { top: 2px; left: 2px; transform: rotate(-6deg); }
+.uno-card .stack2 .mini:nth-child(2) { top: 13px; left: 13px; transform: rotate(6deg); }
+.uno-card .stack4 .mini { width: 13px; height: 20px; }
+.uno-card .stack4 .mini:nth-child(1) { top: 3px; left: 1px; transform: rotate(-13deg); }
+.uno-card .stack4 .mini:nth-child(2) { top: 2px; left: 16px; transform: rotate(11deg); }
+.uno-card .stack4 .mini:nth-child(3) { top: 19px; left: 3px; transform: rotate(-7deg); }
+.uno-card .stack4 .mini:nth-child(4) { top: 17px; left: 15px; transform: rotate(6deg); z-index: 1; }
+
 .uno-card .corner {
   /* value echoed in two opposite corners, like a real UNO card */
   position: absolute;
-  font-size: 13px;
-  color: #ffffff;
-  font-style: italic;
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.55);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--card-cream);
+  -webkit-text-stroke: 0.8px var(--card-ink);
+  paint-order: stroke fill;
 }
-.uno-card .corner.tl { top: 3px; left: 5px; }
-.uno-card .corner.br { bottom: 3px; right: 5px; transform: rotate(180deg); }
+.uno-card .corner .glyph {
+  width: 14px;
+  height: 14px;
+  filter: drop-shadow(0 0 0.7px var(--card-ink)) drop-shadow(0 0 0.6px var(--card-ink));
+}
+.uno-card .corner.tl { top: 4px; left: 5px; }
+.uno-card .corner.br { bottom: 4px; right: 5px; transform: rotate(180deg); }
 
-/* the four UNO colours: card face + matching numeral inside the white oval */
+/* the four UNO colours (exact hues from the SVG); the colour shows through
+   the transparent oval centre, so no per-colour numeral rules are needed */
 .c-red    { background: var(--card-red); }
-.c-red    .val { color: var(--card-red); }
 .c-green  { background: var(--card-green); }
-.c-green  .val { color: var(--card-green); }
 .c-blue   { background: var(--card-blue); }
-.c-blue   .val { color: var(--card-blue); }
 .c-yellow { background: var(--card-yellow); }
-.c-yellow .val { color: #c98a00; } /* darker gold so it reads on the white oval */
 
-/* Wild: black card with the four-colour oval, like UNO's wild card */
-.c-wild { background: #0a0a0a; }
+/* Wild: dark face with the four-colour oval, like UNO's wild card */
+.c-wild { background: var(--card-ink); }
 .c-wild .pip {
   background: conic-gradient(
     var(--card-red)    0deg 90deg,
@@ -246,17 +291,10 @@ hr.candy {
     var(--card-green)  180deg 270deg,
     var(--card-yellow) 270deg 360deg);
 }
-.c-wild .val {
-  color: #ffffff;
-  font-size: 20px;
-  text-shadow: 0 0 3px #000000, 1px 1px 0 #000000;
-}
+.c-wild .val { font-size: 26px; }
 
-/* Copy power-ups: UNO action-card treatment - black face, white oval */
-.c-copy { background: #0a0a0a; }
-.c-copy .pip { background: #ffffff; }
-.c-copy .val { color: #111111; }
-.c-copy .corner { color: #ffffff; }
+/* Copy power-ups: dark "action card" face with the same cream-ringed oval */
+.c-copy { background: var(--card-ink); }
 
 .card-caption {
   font-family: "Courier New", monospace;
@@ -355,6 +393,142 @@ table.rankings td.rank-name { font-weight: bold; white-space: nowrap; }
   font-family: "MS Sans Serif", "Courier New", monospace;
   font-size: 11px;
 }
+
+/* ========================================================================
+   GAME TABLE  -  the playable /play interface. Styled in the same 90s look;
+   card faces reuse the .uno-card classes above.
+   ======================================================================== */
+.game { text-align: center; }
+
+.game-msg {
+  background: var(--yellow);
+  color: #000000;
+  border: 3px outset var(--silver);
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-weight: bold;
+  padding: 8px 10px;
+  margin: 10px 0;
+}
+
+.opponents {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+.seat {
+  background: var(--silver);
+  color: #000000;
+  border: 3px outset var(--silver);
+  padding: 6px 10px;
+  min-width: 130px;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+}
+.seat.turn { box-shadow: 0 0 0 3px var(--hotpink); }
+.seat.folded { opacity: 0.45; }
+.seat-name { font-family: "Comic Sans MS", cursive, sans-serif; font-weight: bold; font-size: 15px; }
+.seat-tags { font-weight: bold; color: var(--navy); }
+.seat-cards { display: flex; gap: 3px; justify-content: center; margin-top: 5px; transform: scale(0.62); transform-origin: top center; height: 64px; }
+.seat-action { min-height: 16px; color: var(--purple); font-weight: bold; }
+
+.table-center { margin: 10px 0; }
+.pot {
+  display: inline-block;
+  background: #000000;
+  color: var(--lime);
+  font-family: "Courier New", monospace;
+  font-size: 18px;
+  letter-spacing: 2px;
+  padding: 4px 12px;
+  border: 2px inset var(--silver);
+}
+.phase-tag {
+  display: inline-block;
+  background: var(--navy);
+  color: var(--yellow);
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  padding: 3px 12px;
+  margin-left: 8px;
+  border: 2px outset var(--cyan);
+}
+
+.you {
+  background: var(--teal);
+  color: #ffffff;
+  border-top: 3px solid var(--bevel-light);
+  border-left: 3px solid var(--bevel-light);
+  border-right: 3px solid var(--bevel-dark);
+  border-bottom: 3px solid var(--bevel-dark);
+  padding: 10px;
+  margin: 12px 0;
+}
+.you-meta { font-family: "Courier New", monospace; font-weight: bold; margin-bottom: 8px; }
+.hand { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+.card-slot { display: flex; flex-direction: column; align-items: center; }
+.card-slot .uno-card { cursor: pointer; }
+.card-slot.selected .uno-card { outline: 4px solid var(--hotpink); transform: translateY(-10px); }
+.card-moves { margin-top: 4px; }
+.card-moves button { font-size: 12px; padding: 1px 7px; margin: 0 1px; }
+.hand-eval { margin-top: 10px; font-family: "Courier New", monospace; font-weight: bold; color: var(--yellow); }
+
+/* the patterned card back for opponents' hidden cards */
+.uno-card.card-back { background: var(--card-ink); }
+.uno-card.card-back::after {
+  content: "U";
+  width: 34px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--card-red);
+  transform: rotate(20deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--card-cream);
+  -webkit-text-stroke: 1px var(--card-ink);
+  paint-order: stroke fill;
+  font: 900 24px Arial, sans-serif;
+}
+
+.controls { margin: 12px 0; min-height: 40px; }
+.controls .amount {
+  font-family: "Courier New", monospace;
+  font-size: 15px;
+  width: 70px;
+  padding: 5px;
+  border: 2px inset var(--silver);
+}
+.game button {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-weight: bold;
+  font-size: 15px;
+  background: var(--silver);
+  color: var(--navy);
+  border: 3px outset var(--silver);
+  padding: 6px 14px;
+  margin: 3px;
+  cursor: pointer;
+}
+.game button:hover { background: var(--yellow); }
+.game button:active { border-style: inset; }
+.game button:disabled { opacity: 0.45; cursor: default; }
+.game button.danger { background: var(--red); color: #ffffff; }
+.game button.go { background: var(--lime); color: #000000; }
+
+.log {
+  text-align: left;
+  background: #000000;
+  color: var(--lime);
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  padding: 8px 10px;
+  margin: 12px 0;
+  max-height: 130px;
+  overflow-y: auto;
+  border: 2px inset var(--silver);
+}
+.log div { margin: 1px 0; }
 
 /* Mobile: the 90s did not have phones, but we are kind. */
 @media (max-width: 520px) {

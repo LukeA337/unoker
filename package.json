@@ -9,13 +9,16 @@
     "preview": "npm run build && wrangler dev",
     "astro": "astro",
     "deploy": "npm run build && wrangler deploy",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/cloudflare": "11",
     "astro": "^4.16.0"
   },
   "devDependencies": {
+    "vitest": "^2.1.8",
     "wrangler": "^4.98.0"
   }
 }

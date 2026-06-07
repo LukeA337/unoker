@@ -1,25 +1,21 @@
 ---
 // Card.astro - a single UNO-style UNOKER card face.
 // color: red | green | blue | yellow | wild | copy
-// label: what shows in the center (e.g. "5", "W", "+2", "+4", "C")
+// label: what the card represents (e.g. "5", "10", "W", "C", "+2", "+4")
 // caption: optional small text under the card (used in rules examples)
+//
+// The actual face markup (tilted oval, numerals, skip/reverse/+2/+4 icons)
+// lives in cardGlyphs.ts so it stays identical to the in-game renderer.
+import { cardFaceHTML, cardAria } from "./cardGlyphs";
 export interface Props {
   color: "red" | "green" | "blue" | "yellow" | "wild" | "copy";
   label: string;
   caption?: string;
 }
 const { color, label, caption } = Astro.props;
-const colorClass = `c-${color}`;
-// The wild card is just the four-colour oval; every other card echoes its
-// value in the corners. Two-character values (10, +2, +4) get a smaller font.
-const showCorners = color !== "wild";
-const valClass = label.length > 1 ? "val small" : "val";
+const inner = cardFaceHTML(label, color);
 ---
 <div class="card-with-caption">
-  <div class={`uno-card ${colorClass}`}>
-    {showCorners && <span class="corner tl">{label}</span>}
-    <span class="pip"><span class={valClass}>{label}</span></span>
-    {showCorners && <span class="corner br">{label}</span>}
-  </div>
+  <div class={`uno-card c-${color}`} role="img" aria-label={cardAria(label, color)} set:html={inner}></div>
   {caption && <span class="card-caption">{caption}</span>}
 </div>

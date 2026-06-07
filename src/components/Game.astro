@@ -1,0 +1,431 @@
+---
+// Game.astro - the playable 2D UNOKER table.
+//
+// This is the renderer. It reads and writes ONLY the engine's public API
+// (../engine) and does two things: draw whatever GameState it is handed, and
+// send the player's intents back as Actions. No rules, deck, or hand logic
+// lives here - that all stays in src/engine/. A future 3D renderer can replace
+// this file and read the same state. (This was the GamePlaceholder swap point.)
+---
+<div id="unoker-game" class="game">
+  <div class="game-msg" id="game-msg">Shuffling the deck…</div>
+
+  <div class="opponents" id="opponents"></div>
+
+  <div class="table-center">
+    <span class="pot" id="pot">POT 0</span>
+    <span class="phase-tag" id="phase">—</span>
+  </div>
+
+  <div class="you">
+    <div class="you-meta" id="you-meta"></div>
+    <div class="hand" id="hand"></div>
+    <div class="hand-eval" id="hand-eval"></div>
+  </div>
+
+  <div class="controls" id="controls"></div>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+  import {
+    startGame,
+    startHand,
+    applyAction,
+    legalActions,
+    currentActor,
+    isGameOver,
+    potTotal,
+    evaluateHand,
+    bestArrangement,
+    faceLabel,
+    faceColorClass,
+    makeRng,
+    type GameState,
+    type Action,
+    type Card,
+  } from "../engine/index";
+  import { cardFaceHTML, cardAria } from "./cardGlyphs";
+
+  const HUMAN = 0;
+  const BOT_DELAY = 650;
+
+  let game: GameState;
+  let botRng = makeRng(1);
+  let selectedDiscards = new Set<number>();
+  let selectionPhase = "";
+
+  const $ = (id: string) => document.getElementById(id)!;
+
+  // ---- card rendering (reuses the global .uno-card styles) ---------------
+  function cardEl(
+    card: Card,
+    opts: { faceDown?: boolean; resolved?: number } = {},
+  ): HTMLElement {
+    const wrap = document.createElement("div");
+    wrap.className = "card-with-caption";
+    const c = document.createElement("div");
+    if (opts.faceDown) {
+      c.className = "uno-card card-back";
+    } else {
+      const klass = faceColorClass(card);
+      const label = faceLabel(card);
+      c.className = `uno-card c-${klass}`;
+      c.setAttribute("role", "img");
+      c.setAttribute("aria-label", cardAria(label, klass));
+      c.innerHTML = cardFaceHTML(label, klass);
+    }
+    wrap.appendChild(c);
+    if (opts.resolved !== undefined) {
+      const cap = document.createElement("span");
+      cap.className = "card-caption";
+      cap.style.color = "#ffffcc";
+      cap.textContent = `= ${opts.resolved}`;
+      wrap.appendChild(cap);
+    }
+    return wrap;
+  }
+
+  // ---- render --------------------------------------------------------------
+  function render() {
+    const showdown = game.phase === "handOver" ? game.showdown : undefined;
+    renderMessage();
+    renderOpponents(showdown);
+    $("pot").textContent = `POT ${potTotal(game) + collectedPot()}`;
+    $("phase").textContent = phaseLabel(game.phase);
+    renderYou(showdown);
+    renderControls();
+    renderLog();
+  }
+
+  // Once the pot is distributed at showdown, potTotal is 0; show the awarded
+  // total from the result so the figure does not blink to 0.
+  function collectedPot(): number {
+    const sd = game.phase === "handOver" ? game.showdown : undefined;
+    if (!sd) return 0;
+    return sd.pots.reduce((t, p) => t + p.amount, 0);
+  }
+
+  function phaseLabel(phase: string): string {
+    return (
+      {
+        bet1: "Betting 1",
+        draw1: "Draw (up to 2)",
+        bet2: "Betting 2",
+        draw2: "Draw (up to 1)",
+        bet3: "Betting 3",
+        showdown: "Showdown",
+        handOver: "Hand over",
+      } as Record<string, string>
+    )[phase] ?? phase;
+  }
+
+  function renderMessage() {
+    const el = $("game-msg");
+    if (game.phase === "handOver" && game.showdown) {
+      const winners = Object.entries(game.showdown.payouts)
+        .filter(([, amt]) => amt > 0)
+        .map(([id]) => game.players[+id].name);
+      el.textContent = winners.length
+        ? `🏆 ${winners.join(" & ")} win the pot!`
+        : "Hand over.";
+      return;
+    }
+    const actor = currentActor(game);
+    if (!actor) {
+      el.textContent = "…";
+    } else if (actor.id === HUMAN) {
+      el.textContent =
+        game.phase.startsWith("draw")
+          ? "Your draw — pick cards to swap, then Draw."
+          : "Your move.";
+    } else {
+      el.textContent = `${actor.name} is thinking…`;
+    }
+  }
+
+  function renderOpponents(showdown: GameState["showdown"]) {
+    const box = $("opponents");
+    box.innerHTML = "";
+    for (const p of game.players) {
+      if (p.id === HUMAN) continue;
+      const seat = document.createElement("div");
+      seat.className = "seat";
+      if (game.toAct === p.id) seat.classList.add("turn");
+      if (p.folded) seat.classList.add("folded");
+
+      const tags: string[] = [];
+      if (game.dealer === p.id) tags.push("Ⓓ");
+      const name = document.createElement("div");
+      name.className = "seat-name";
+      name.textContent = p.name;
+      const tagEl = document.createElement("span");
+      tagEl.className = "seat-tags";
+      tagEl.textContent = tags.length ? ` ${tags.join(" ")}` : "";
+      name.appendChild(tagEl);
+
+      const chips = document.createElement("div");
+      chips.textContent = `💰 ${p.chips}` + (p.committedThisRound ? `  (bet ${p.committedThisRound})` : "");
+
+      const cards = document.createElement("div");
+      cards.className = "seat-cards";
+      const reveal =
+        showdown && !showdown.uncontested && !p.folded;
+      if (p.folded) {
+        cards.textContent = "folded";
+      } else {
+        for (const c of p.hand) cards.appendChild(cardEl(c, { faceDown: !reveal }));
+      }
+
+      const act = document.createElement("div");
+      act.className = "seat-action";
+      if (reveal) {
+        const h = showdown!.hands.find((x) => x.playerId === p.id);
+        act.textContent = h ? h.result.category.name : "";
+      } else {
+        act.textContent = p.lastAction ?? "";
+      }
+
+      seat.append(name, chips, cards, act);
+      box.appendChild(seat);
+    }
+  }
+
+  function renderYou(showdown: GameState["showdown"]) {
+    const me = game.players[HUMAN];
+    const meta = $("you-meta");
+    const tag = game.dealer === HUMAN ? " Ⓓ" : "";
+    meta.textContent =
+      `You${tag} — 💰 ${me.chips}` +
+      (me.committedThisRound ? `  (in pot this round: ${me.committedThisRound})` : "") +
+      (me.folded ? "  — FOLDED" : "");
+
+    const hand = $("hand");
+    hand.innerHTML = "";
+
+    const myTurn = game.toAct === HUMAN;
+    const isDraw = game.phase.startsWith("draw");
+    if (isDraw && myTurn && selectionPhase !== game.phase) {
+      selectedDiscards = new Set();
+      selectionPhase = game.phase;
+    }
+
+    // live read of the current arrangement (hand is always 5 cards)
+    let resolved: number[] | null = null;
+    if (me.hand.length === 5) {
+      try {
+        resolved = evaluateHand(me.hand).resolvedValues;
+      } catch {
+        resolved = null;
+      }
+    }
+
+    me.hand.forEach((card, i) => {
+      const slot = document.createElement("div");
+      slot.className = "card-slot";
+      if (selectedDiscards.has(i)) slot.classList.add("selected");
+      const el = cardEl(card, resolved ? { resolved: resolved[i] } : {});
+      slot.appendChild(el);
+
+      if (myTurn && isDraw) {
+        el.addEventListener("click", () => toggleDiscard(i));
+      }
+      if (myTurn && !isDraw && !me.folded) {
+        const moves = document.createElement("div");
+        moves.className = "card-moves";
+        const left = button("◀", () => reorderSwap(i, i - 1));
+        const right = button("▶", () => reorderSwap(i, i + 1));
+        (left as HTMLButtonElement).disabled = i === 0;
+        (right as HTMLButtonElement).disabled = i === me.hand.length - 1;
+        moves.append(left, right);
+        slot.appendChild(moves);
+      }
+      hand.appendChild(slot);
+    });
+
+    const evalEl = $("hand-eval");
+    if (showdown && !showdown.uncontested && !me.folded) {
+      const h = showdown.hands.find((x) => x.playerId === HUMAN);
+      const won = game.showdown!.payouts[HUMAN] ?? 0;
+      evalEl.textContent =
+        (h ? `Your hand: ${h.result.category.name}` : "") +
+        (won > 0 ? `  — you win ${won}! 🎉` : "  — better luck next hand.");
+    } else if (resolved && !me.folded) {
+      evalEl.textContent = `Current arrangement: ${evaluateHand(me.hand).category.name}`;
+    } else {
+      evalEl.textContent = "";
+    }
+  }
+
+  function renderControls() {
+    const box = $("controls");
+    box.innerHTML = "";
+
+    if (game.phase === "handOver") {
+      if (isGameOver(game)) {
+        const winner = game.players.find((p) => p.chips > 0);
+        const note = document.createElement("span");
+        note.textContent = winner ? `${winner.name} takes it all. ` : "";
+        box.appendChild(note);
+        box.appendChild(button("New game", newGame, "go"));
+      } else {
+        box.appendChild(button("Next hand ▶", nextHand, "go"));
+      }
+      return;
+    }
+
+    const actor = currentActor(game);
+    if (!actor || actor.id !== HUMAN) {
+      const wait = document.createElement("span");
+      wait.textContent = "Waiting…";
+      box.appendChild(wait);
+      return;
+    }
+
+    const la = legalActions(game);
+    if (!la) return;
+
+    if (la.isDraw) {
+      const n = selectedDiscards.size;
+      box.appendChild(
+        button(n ? `Swap ${n} card${n > 1 ? "s" : ""}` : "Stand pat", doDraw, "go"),
+      );
+      box.appendChild(button("Auto-arrange", autoArrange));
+      const hint = document.createElement("span");
+      hint.style.marginLeft = "8px";
+      hint.textContent = `(discard up to ${la.drawLimit})`;
+      box.appendChild(hint);
+      return;
+    }
+
+    // betting controls
+    if (la.canFold) box.appendChild(button("Fold", () => act({ type: "fold" }), "danger"));
+    if (la.canCheck) box.appendChild(button("Check", () => act({ type: "check" })));
+    if (la.canCall)
+      box.appendChild(button(`Call ${la.callAmount}`, () => act({ type: "call" }), "go"));
+    if (la.canRaise) {
+      const input = document.createElement("input");
+      input.type = "number";
+      input.className = "amount";
+      input.min = String(la.minRaiseTo);
+      input.max = String(la.maxRaiseTo);
+      input.value = String(la.minRaiseTo);
+      const raiseLabel = la.canCheck ? "Bet to" : "Raise to";
+      box.appendChild(
+        button(raiseLabel, () => {
+          const to = Math.max(
+            la.minRaiseTo,
+            Math.min(la.maxRaiseTo, Number(input.value) || la.minRaiseTo),
+          );
+          act({ type: "raise", to });
+        }),
+      );
+      box.appendChild(input);
+      box.appendChild(button("All-in", () => act({ type: "raise", to: la.maxRaiseTo }), "danger"));
+    }
+    box.appendChild(button("Auto-arrange", autoArrange));
+  }
+
+  function renderLog() {
+    const box = $("log");
+    box.innerHTML = "";
+    for (const line of game.log.slice(-40)) {
+      const d = document.createElement("div");
+      d.textContent = line;
+      box.appendChild(d);
+    }
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // ---- helpers -------------------------------------------------------------
+  function button(label: string, onClick: () => void, cls = ""): HTMLElement {
+    const b = document.createElement("button");
+    b.textContent = label;
+    if (cls) b.className = cls;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function toggleDiscard(i: number) {
+    const la = legalActions(game);
+    if (!la) return;
+    if (selectedDiscards.has(i)) selectedDiscards.delete(i);
+    else if (selectedDiscards.size < la.drawLimit) selectedDiscards.add(i);
+    render();
+  }
+
+  function reorderSwap(i: number, j: number) {
+    const n = game.players[HUMAN].hand.length;
+    if (j < 0 || j >= n) return;
+    const order = [...Array(n).keys()];
+    [order[i], order[j]] = [order[j], order[i]];
+    game = applyAction(game, { type: "reorder", order });
+    render();
+  }
+
+  function autoArrange() {
+    const hand = game.players[HUMAN].hand;
+    const best = bestArrangement(hand).order;
+    const order = best.map((c) => hand.findIndex((h) => h.id === c.id));
+    game = applyAction(game, { type: "reorder", order });
+    render();
+  }
+
+  function doDraw() {
+    game = applyAction(game, { type: "draw", discard: [...selectedDiscards] });
+    selectedDiscards = new Set();
+    step();
+  }
+
+  function act(action: Action) {
+    game = applyAction(game, action);
+    step();
+  }
+
+  // ---- turn loop -----------------------------------------------------------
+  function step() {
+    render();
+    const actor = currentActor(game);
+    if (game.phase === "handOver" || !actor) return;
+    if (actor.isBot) {
+      window.setTimeout(() => {
+        game = applyAction(game, (botActionSafe()));
+        step();
+      }, BOT_DELAY);
+    }
+  }
+
+  // import botAction lazily-typed to keep this section tidy
+  function botActionSafe(): Action {
+    return botAction(game, botRng);
+  }
+
+  function nextHand() {
+    game = startHand(game);
+    selectionPhase = "";
+    step();
+  }
+
+  function newGame() {
+    const seed = (Date.now() & 0x7fffffff) >>> 0;
+    botRng = makeRng((seed ^ 0x5bd1e995) >>> 0);
+    game = startGame({
+      players: [
+        { name: "You", isBot: false },
+        { name: "Roxx", isBot: true },
+        { name: "Bitz", isBot: true },
+        { name: "Dux", isBot: true },
+      ],
+      startingChips: 200,
+      minBet: 10,
+      seed,
+    });
+    selectionPhase = "";
+    step();
+  }
+
+  // botAction is imported separately so the loop above stays readable
+  import { botAction } from "../engine/index";
+
+  if (document.getElementById("unoker-game")) newGame();
+</script>

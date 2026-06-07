@@ -1,11 +1,11 @@
 # UNOKER.NET
 
-The skeleton for a website teaching **UNOKER** (poker with an Uno deck), with a
-1990s "early internet" aesthetic. Two real pages of content (home + rules) and a
-placeholder for the game you'll build next.
+A website teaching **UNOKER** (poker with an Uno deck), with a 1990s "early
+internet" aesthetic. Three pages: home, the full rules, and a **playable**
+single-player game vs. computer opponents on `/play`.
 
 Built with [Astro](https://astro.build). Static output, deploys free to
-Cloudflare Pages. No backend yet.
+Cloudflare Pages. No backend yet (single-player runs entirely in the browser).
 
 ## What's here
 
@@ -13,16 +13,21 @@ Cloudflare Pages. No backend yet.
 src/
   layouts/BaseLayout.astro      site chrome: marquee, nav, footer junk
   components/
-    Card.astro                  UNO-style CSS card art
-    GamePlaceholder.astro       "under construction" -> THE SWAP POINT for the game
+    Card.astro                  modern UNO-style CSS card art
+    Game.astro                  the 2D play table (renderer: draws engine state)
+    GamePlaceholder.astro       the original "under construction" swap-point marker
   pages/
     index.astro                 landing page
     rules.astro                 full rules, from the guide
-    play.astro                  renders <GamePlaceholder/>
-  styles/global.css             the whole 90s look
-  engine/                       RESERVED for the pure game engine (see its README)
+    play.astro                  renders <Game/>  (the swap point)
+  styles/global.css             the whole 90s look + the game table
+  engine/                       the pure game engine + tests (see its README)
 public/favicon.svg
 ```
+
+The engine (`src/engine/`) is pure TypeScript with no DOM/network: deck, hand
+evaluator, and the betting/draw state machine, with a Vitest suite. `Game.astro`
+is just a renderer over it. Run the tests with `npm test`.
 
 ## Run it locally (Windows)
 
@@ -73,15 +78,22 @@ git push -u origin main
 Buy the domain (Cloudflare Registrar sells at cost). In the Pages project:
 **Custom domains -> Set up a domain**. Adding it changes the URL, nothing else.
 
-## Building the game next
+## Changing the hand rankings
 
-The game goes on `/play`. In `src/pages/play.astro`, swap the single line
-`<GamePlaceholder />` for your game component (an Astro island, e.g.
-`<Game client:load />`).
+UNOKER's rankings are unusual and tuned by simulation. They live as one ordered
+array, `HAND_RANKINGS`, in `src/engine/ranking.ts` (index 0 = strongest).
+**Reorder that array and the whole game re-ranks** — the evaluator compares by
+rank index and never hardcodes the order, so no other edits are needed. `npm
+test` covers the evaluator against the rules PDF's worked hands.
 
-Put the rules/deck/hand-evaluation logic in `src/engine/` as pure TypeScript
-(no DOM, no network). That's what lets the identical code run client-side now
-and on a server when you add multiplayer. See `src/engine/README.md`.
+## Building the 3D version next
+
+The game on `/play` is a deliberately plain 2D renderer (`Game.astro`) over the
+engine. A 3D (PS1-style) version is a *separate* renderer that swaps in for
+`<Game />` in `src/pages/play.astro` and reads the same `GameState` — if it
+stalls, the 2D game still works. Keep all rules/deck/evaluation logic in
+`src/engine/`; renderers only draw state and send back player intents. See
+`src/engine/README.md`.
 
 ### Multiplayer, when you get there
 

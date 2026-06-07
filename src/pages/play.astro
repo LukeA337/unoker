@@ -1,18 +1,19 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import GamePlaceholder from "../components/GamePlaceholder.astro";
+import Game from "../components/Game.astro";
 ---
 <BaseLayout title="UNOKER.NET - Play Now!" active="play">
   <h2 class="section">&#127183; THE TABLE &#127183;</h2>
 
-  <!-- SWAP POINT: replace <GamePlaceholder /> with your game island later,
-       e.g. <Game client:load /> imported from a component backed by src/engine/. -->
-  <GamePlaceholder />
+  <!-- SWAP POINT: this single line is the boundary. <Game /> reads/writes only
+       the engine in src/engine/; a 3D renderer would swap in right here. -->
+  <Game />
 
   <div class="panel">
     <p>
-      While the table is being built, brush up on
-      <a href="/rules">the rules</a> so you're ready to clean up when it goes live.
+      New here? The hand rankings are unusual &mdash; read
+      <a href="/rules">the rules</a> first. Order matters: arrange your cards with
+      the &#9664;&#9658; buttons (or hit <b>Auto-arrange</b>) before the showdown.
     </p>
   </div>
 </BaseLayout>
