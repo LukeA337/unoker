@@ -22,7 +22,6 @@
   import * as THREE from "three";
   import {
     startGame,
-    startHand,
     faceLabel,
     faceColorClass,
     evaluateHand,
@@ -142,31 +141,210 @@
       scene.add(chip);
     }
 
-    // ---- placeholder opponents around the far side ----------------------
-    const seatColors = [0xc94f8a, 0x4fb0c9, 0xc9a24f];
-    [-0.7, 0, 0.7].forEach((ang, i) => {
+    // ---- goofy opponents: low-poly homage characters --------------------
+    // Built facing +Z; seated behind the table. A roster (below) randomly
+    // picks which ones sit down each deal, so the table changes every game.
+    const arena = new THREE.Group();
+    scene.add(arena);
+    const SEATS = [
+      { x: -1.15, z: -1.0 },
+      { x: 0, z: -1.62 },
+      { x: 1.15, z: -1.0 },
+    ];
+
+    // a cartoon eyeball (unlit so it stays bright)
+    function eye(x: number, y: number, z: number): THREE.Group {
+      const e = new THREE.Group();
+      const white = new THREE.Mesh(
+        new THREE.SphereGeometry(0.055, 8, 6),
+        new THREE.MeshBasicMaterial({ color: 0xffffff }),
+      );
+      const pupil = new THREE.Mesh(
+        new THREE.SphereGeometry(0.028, 6, 5),
+        new THREE.MeshBasicMaterial({ color: 0x111111 }),
+      );
+      pupil.position.z = 0.04;
+      e.add(white, pupil);
+      e.position.set(x, y, z);
+      return e;
+    }
+
+    function buildScooby(): THREE.Group {
       const g = new THREE.Group();
-      const r = 1.85;
-      g.position.set(Math.sin(ang) * r, 0, -Math.cos(ang) * r * 0.7 - 0.3);
-      g.lookAt(0, 1.0, 0);
-      const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.28, 0.5, 3, 8), lambert(seatColors[i]));
-      body.position.y = 1.15;
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), lambert(0xe6b07a));
-      head.position.y = 1.62;
-      g.add(body, head);
-      // two card backs in front of each opponent
-      const backTex = makeBackTexture();
-      for (let c = 0; c < 2; c++) {
-        const back = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.16, 0.24),
-          new THREE.MeshBasicMaterial({ map: backTex }),
+      const TAN = 0xcd9a5b;
+      const DARK = 0x4a3320;
+      const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.3, 0.45, 4, 10), lambert(TAN));
+      body.position.set(0, 1.05, 0);
+      body.scale.set(1, 1, 0.85);
+      g.add(body);
+      [[-0.12, 1.32, -0.16], [0.14, 1.2, -0.18], [0.02, 1.45, -0.14]].forEach((p) => {
+        const spot = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), lambert(DARK));
+        spot.position.set(p[0], p[1], p[2]);
+        spot.scale.set(1, 1, 0.4);
+        g.add(spot);
+      });
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 10), lambert(TAN));
+      head.position.set(0, 1.62, 0.05);
+      g.add(head);
+      const snout = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.16, 0.26), lambert(TAN));
+      snout.position.set(0, 1.55, 0.28);
+      g.add(snout);
+      const nose = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), lambert(0x141414));
+      nose.position.set(0, 1.57, 0.42);
+      g.add(nose);
+      [-1, 1].forEach((s) => {
+        const ear = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.26, 0.14), lambert(DARK));
+        ear.position.set(s * 0.24, 1.55, -0.02);
+        ear.rotation.z = s * 0.4;
+        g.add(ear);
+      });
+      g.add(eye(-0.09, 1.71, 0.23), eye(0.09, 1.71, 0.23));
+      const collar = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.05, 6, 12), lambert(0x18a0e0));
+      collar.position.set(0, 1.4, 0.02);
+      collar.rotation.x = Math.PI / 2;
+      g.add(collar);
+      const tag = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.03), lambert(0xe8d24a));
+      tag.position.set(0, 1.31, 0.2);
+      tag.rotation.z = Math.PI / 4;
+      g.add(tag);
+      return g;
+    }
+
+    function buildLeftShark(): THREE.Group {
+      const g = new THREE.Group();
+      const BLUE = 0x6fb7e0;
+      const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.34, 0.5, 5, 12), lambert(BLUE));
+      body.position.set(0, 1.15, 0);
+      body.scale.set(1, 1, 0.9);
+      g.add(body);
+      const belly = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 8), lambert(0xeaf3f8));
+      belly.position.set(0, 1.0, 0.18);
+      belly.scale.set(0.8, 1.1, 0.5);
+      g.add(belly);
+      const snout = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 10), lambert(BLUE));
+      snout.position.set(0, 1.56, 0.04);
+      g.add(snout);
+      const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.1, 0.06), lambert(0x33202c));
+      mouth.position.set(0, 1.46, 0.27);
+      g.add(mouth);
+      for (let i = 0; i < 5; i++) {
+        const tooth = new THREE.Mesh(
+          new THREE.ConeGeometry(0.025, 0.06, 4),
+          new THREE.MeshBasicMaterial({ color: 0xffffff }),
         );
-        back.position.set((c - 0.5) * 0.18, 0.86, 0.55);
-        back.rotation.x = -Math.PI / 2.1;
-        g.add(back);
+        tooth.position.set(-0.12 + i * 0.06, 1.49, 0.29);
+        tooth.rotation.x = Math.PI;
+        g.add(tooth);
       }
-      scene.add(g);
-    });
+      const fin = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.3, 4), lambert(BLUE));
+      fin.position.set(0, 1.98, -0.16);
+      fin.rotation.x = -0.5;
+      g.add(fin);
+      [-1, 1].forEach((s) => {
+        const f = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.34, 4), lambert(BLUE));
+        f.position.set(s * 0.42, 1.02, 0.05);
+        f.rotation.z = (s * Math.PI) / 2.2;
+        f.rotation.x = 0.3;
+        g.add(f);
+      });
+      g.add(eye(-0.12, 1.72, 0.24), eye(0.12, 1.72, 0.24));
+      g.rotation.z = 0.05; // a little goofy lean
+      return g;
+    }
+
+    function buildBurnie(): THREE.Group {
+      const g = new THREE.Group();
+      const ORANGE = 0xef6c1a;
+      const FLAME = 0xffb02e;
+      const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.34, 0.4, 4, 10), lambert(0x141414));
+      torso.position.set(0, 1.1, 0);
+      g.add(torso);
+      const trim = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.04, 6, 14), lambert(0xe4002b));
+      trim.position.set(0, 1.34, 0);
+      trim.rotation.x = Math.PI / 2;
+      g.add(trim);
+      [-1, 1].forEach((s) => {
+        const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.3, 3, 6), lambert(ORANGE));
+        arm.position.set(s * 0.4, 1.05, 0.05);
+        arm.rotation.z = s * 0.5;
+        g.add(arm);
+      });
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.36, 14, 12), lambert(ORANGE));
+      head.position.set(0, 1.8, 0.02);
+      g.add(head);
+      [-0.15, 0.0, 0.15].forEach((dx, i) => {
+        const tall = i === 1;
+        const fl = new THREE.Mesh(new THREE.ConeGeometry(0.1, tall ? 0.42 : 0.3, 5), lambert(tall ? 0xffd24d : FLAME));
+        fl.position.set(dx, tall ? 2.24 : 2.16, -0.02);
+        g.add(fl);
+      });
+      const nose = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 8), lambert(0x2faa3a));
+      nose.position.set(0, 1.76, 0.34);
+      g.add(nose);
+      g.add(eye(-0.14, 1.93, 0.29), eye(0.14, 1.93, 0.29));
+      const grin = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.06, 0.05), lambert(0x5a1a10));
+      grin.position.set(0, 1.63, 0.31);
+      g.add(grin);
+      return g;
+    }
+
+    // floating retro name tag above each character
+    function makeLabel(text: string): THREE.Sprite {
+      const c = document.createElement("canvas");
+      c.width = 256;
+      c.height = 64;
+      const x = c.getContext("2d")!;
+      x.fillStyle = "rgba(0,0,0,0.5)";
+      x.fillRect(0, 0, 256, 64);
+      x.font = '900 30px "Comic Sans MS", cursive, sans-serif';
+      x.textAlign = "center";
+      x.textBaseline = "middle";
+      x.lineWidth = 5;
+      x.strokeStyle = "#000000";
+      x.strokeText(text, 128, 35);
+      x.fillStyle = "#ffd400";
+      x.fillText(text, 128, 35);
+      const t = new THREE.CanvasTexture(c);
+      t.magFilter = THREE.NearestFilter;
+      t.minFilter = THREE.NearestFilter;
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false }));
+      s.scale.set(1.05, 0.26, 1);
+      return s;
+    }
+
+    function disposeGroup(o: THREE.Object3D) {
+      o.traverse((n: any) => {
+        if (n.geometry) n.geometry.dispose();
+        const m = n.material;
+        if (m) (Array.isArray(m) ? m : [m]).forEach((mm: any) => { if (mm.map) mm.map.dispose(); mm.dispose(); });
+      });
+    }
+
+    function placeOpponents(chosen: { name: string; build: () => THREE.Group }[]) {
+      arena.children.slice().forEach(disposeGroup);
+      arena.clear();
+      const backTex = makeBackTexture();
+      chosen.forEach((c, i) => {
+        const seat = SEATS[i];
+        if (!seat) return;
+        const g = c.build();
+        g.position.set(seat.x, 0, seat.z);
+        g.rotation.y = Math.atan2(-seat.x, -seat.z); // face the table centre
+        for (let k = 0; k < 2; k++) {
+          const back = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.16, 0.24),
+            new THREE.MeshBasicMaterial({ map: backTex }),
+          );
+          back.position.set((k - 0.5) * 0.2, 0.84, 0.62);
+          back.rotation.x = -Math.PI / 2.05;
+          g.add(back);
+        }
+        const label = makeLabel(c.name);
+        label.position.set(0, 2.5, 0);
+        g.add(label);
+        arena.add(g);
+      });
+    }
 
     // ---- first-person: our own hands + our cards, parented to the camera -
     const handRig = new THREE.Group();
@@ -217,22 +395,39 @@
       });
     }
 
-    // ---- engine: deal a hand, show it -----------------------------------
-    let game: GameState = freshGame();
-    function freshGame(): GameState {
-      return startGame({
+    // ---- roster: who sits down is randomised each deal ------------------
+    // Only three for now, but the table picks a random 2-3 of them in random
+    // seats, so you don't face the same line-up every time. Add more entries
+    // here and the variety grows automatically.
+    type RosterEntry = { name: string; build: () => THREE.Group };
+    const ROSTER: RosterEntry[] = [
+      { name: "Left Shark", build: buildLeftShark },
+      { name: "Scooby-Doo", build: buildScooby },
+      { name: "Burnie", build: buildBurnie },
+    ];
+    function pickOpponents(): RosterEntry[] {
+      const s = ROSTER.slice();
+      for (let i = s.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [s[i], s[j]] = [s[j], s[i]];
+      }
+      const n = Math.min(SEATS.length, ROSTER.length, 2 + Math.floor(Math.random() * 2)); // 2 or 3
+      return s.slice(0, n);
+    }
+
+    let game: GameState;
+    function newRound() {
+      const chosen = pickOpponents();
+      game = startGame({
         players: [
           { name: "You", isBot: false },
-          { name: "Roxx", isBot: true },
-          { name: "Bitz", isBot: true },
-          { name: "Dux", isBot: true },
+          ...chosen.map((c) => ({ name: c.name, isBot: true })),
         ],
         startingChips: 200,
         minBet: 10,
         seed: (Date.now() & 0x7fffffff) >>> 0,
       });
-    }
-    function deal() {
+      placeOpponents(chosen);
       const hand = game.players[0].hand;
       showHand(hand);
       if (handEl) {
@@ -240,12 +435,9 @@
         handEl.textContent = `Your hand: ${cat}`;
       }
     }
-    deal();
+    newRound();
 
-    dealBtn?.addEventListener("click", () => {
-      game = startHand(game);
-      deal();
-    });
+    dealBtn?.addEventListener("click", newRound);
 
     // ---- drag to look around (yaw/pitch around the table) ---------------
     let yaw = 0;
